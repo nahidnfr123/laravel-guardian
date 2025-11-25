@@ -106,7 +106,7 @@ class UserController extends Controller
             }
 
             // If still no user found, try a generic 'login' field
-            if (!$user && isset($data['login'])) {
+            if (! $user && isset($data['login'])) {
                 foreach ($fields as $field) {
                     $user = $userClass::where($field, $data['login'])->first();
                     if ($user) {
@@ -118,7 +118,7 @@ class UserController extends Controller
             // Single credential field
             $loginValue = $data[$credentialField] ?? $data['login'] ?? null;
 
-            if (!$loginValue) {
+            if (! $loginValue) {
                 return response(['error' => 1, 'message' => 'invalid credentials'], 401);
             }
 
@@ -126,7 +126,7 @@ class UserController extends Controller
         }
 
         // Check credentials
-        if (!$user || !Hash::check($request->password, $user->password)) {
+        if (! $user || ! Hash::check($request->password, $user->password)) {
             return response(['error' => 1, 'message' => 'invalid credentials'], 401);
         }
 
@@ -139,7 +139,7 @@ class UserController extends Controller
         if (config('shield.validation.login.check_verified', false)) {
             $verificationField = config('shield.validation.login.verification_field', 'email_verified_at');
 
-            if (!$user->{$verificationField}) {
+            if (! $user->{$verificationField}) {
                 return response(['error' => 1, 'message' => 'account not verified'], 403);
             }
         }

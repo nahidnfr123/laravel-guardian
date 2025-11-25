@@ -57,6 +57,7 @@ use NahidFerdous\Shield\Http\Middleware\EnsureShieldPrivilege;
 use NahidFerdous\Shield\Http\Middleware\EnsureShieldRole;
 use NahidFerdous\Shield\Http\Middleware\ShieldLog;
 use NahidFerdous\Shield\Http\Requests\CreateUserRequest;
+use NahidFerdous\Shield\Http\Requests\LoginRequest;
 use NahidFerdous\Shield\Models\Privilege;
 use NahidFerdous\Shield\Models\Role;
 
@@ -95,6 +96,16 @@ class ShieldServiceProvider extends ServiceProvider
 
             // Otherwise use the default
             return $app->make(CreateUserRequest::class);
+        });
+
+        $this->app->bind(LoginRequest::class, function ($app) {
+            $customClass = config('shield.validation.login.request_class');
+
+            if ($customClass && $customClass !== LoginRequest::class) {
+                return $app->make($customClass);
+            }
+
+            return $app->make(LoginRequest::class);
         });
     }
 
