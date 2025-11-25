@@ -18,25 +18,39 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
-        $creds = $request->validate([
+        $data = $request->validate([
             'email' => 'required|email',
             'password' => 'required',
-            'name' => 'nullable|string',
         ]);
 
         $userClass = $this->userClass();
-        $existing = $userClass::query()->where('email', $creds['email'])->first();
+        $existing = $userClass::query()->where('email', $data['email'])->first();
 
         if ($existing) {
-            return response(['error' => 1, 'message' => 'user already exists'], 409);
+            return response(['error' => 1, 'message' => 'User already exists'], 409);
         }
 
-        /** @var \Illuminate\Database\Eloquent\Model $user */
-        $user = $userClass::create([
-            'email' => $creds['email'],
-            'password' => Hash::make($creds['password']),
-            'name' => $creds['name'],
-        ]);
+        // Get all fillable fields from the model
+        $model = new $userClass;
+        $fillable = $model->getFillable();
+
+        // Prepare data for only fillable fields that exist in the request
+        $userData = [];
+        foreach ($fillable as $field) {
+            if ($request->has($field)) {
+                $userData[$field] = $field === 'password'
+                    ? Hash::make($request->input($field))
+                    : $request->input($field);
+            }
+        }
+
+        $user = $userClass::create($userData);
+        //        /** @var \Illuminate\Database\Eloquent\Model $user */
+        //        $user = $userClass::create([
+        //            'email' => $data['email'],
+        //            'password' => Hash::make($data['password']),
+        //            'name' => $data['name'],
+        //        ]);
 
         $defaultRoleSlug = config('shield.default_user_role_slug', 'user');
         $user->roles()->attach(Role::where('slug', $defaultRoleSlug)->first());

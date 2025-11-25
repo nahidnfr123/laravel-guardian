@@ -5,3 +5,28 @@ composer dump-autoload &&
 composer clear-cache &&
 composer update nahidferdous/shield &&
 php artisan package:discover --ansi
+
+
+
+====================================================
+----------------------- commands -------------------
+====================================================
+
+php artisan vendor:publish --tag=tyro-config
+php artisan vendor:publish --tag=tyro-migrations
+php artisan vendor:publish --tag=tyro-database
+php artisan tyro:publish-config --force
+php artisan tyro:publish-migrations --force
+
+
+php artisan tyro:install
+
+
+php artisan migrate
+# or, interactively
+php artisan tyro:seed
+
+
+php artisan tyro:prepare-user-model
+
+php artisan tyro:seed --force

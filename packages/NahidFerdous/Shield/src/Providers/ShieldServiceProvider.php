@@ -205,7 +205,6 @@ class ShieldServiceProvider extends ServiceProvider
             UserPrivilegesCommand::class,
             UserRolesCommand::class,
             VersionCommand::class,
-
         ]);
     }
 }
