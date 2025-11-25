@@ -56,8 +56,8 @@ use NahidFerdous\Shield\Http\Middleware\EnsureAnyShieldRole;
 use NahidFerdous\Shield\Http\Middleware\EnsureShieldPrivilege;
 use NahidFerdous\Shield\Http\Middleware\EnsureShieldRole;
 use NahidFerdous\Shield\Http\Middleware\ShieldLog;
-use NahidFerdous\Shield\Http\Requests\CreateUserRequest;
-use NahidFerdous\Shield\Http\Requests\LoginRequest;
+use NahidFerdous\Shield\Http\Requests\ShieldCreateUserRequest;
+use NahidFerdous\Shield\Http\Requests\ShieldLoginRequest;
 use NahidFerdous\Shield\Models\Privilege;
 use NahidFerdous\Shield\Models\Role;
 
@@ -86,26 +86,26 @@ class ShieldServiceProvider extends ServiceProvider
     protected function registerValidations(): void
     {
         // Bind the CreateUserRequest to the custom class from config
-        $this->app->bind(CreateUserRequest::class, function ($app) {
+        $this->app->bind(ShieldCreateUserRequest::class, function ($app) {
             $customClass = config('shield.validation.create_user');
 
             // If custom class is set and different from default, use it
-            if ($customClass && $customClass !== CreateUserRequest::class) {
+            if ($customClass && $customClass !== ShieldCreateUserRequest::class) {
                 return $app->make($customClass);
             }
 
             // Otherwise use the default
-            return $app->make(CreateUserRequest::class);
+            return $app->make(ShieldCreateUserRequest::class);
         });
 
-        $this->app->bind(LoginRequest::class, function ($app) {
+        $this->app->bind(ShieldLoginRequest::class, function ($app) {
             $customClass = config('shield.validation.login.request_class');
 
-            if ($customClass && $customClass !== LoginRequest::class) {
+            if ($customClass && $customClass !== ShieldLoginRequest::class) {
                 return $app->make($customClass);
             }
 
-            return $app->make(LoginRequest::class);
+            return $app->make(ShieldLoginRequest::class);
         });
     }
 

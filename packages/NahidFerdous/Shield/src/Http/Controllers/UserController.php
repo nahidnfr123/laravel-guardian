@@ -6,8 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Sanctum\Exceptions\MissingAbilityException;
-use NahidFerdous\Shield\Http\Requests\CreateUserRequest;
-use NahidFerdous\Shield\Http\Requests\LoginRequest;
+use NahidFerdous\Shield\Http\Requests\ShieldCreateUserRequest;
+use NahidFerdous\Shield\Http\Requests\ShieldLoginRequest;
 use NahidFerdous\Shield\Models\Role;
 use NahidFerdous\Shield\Support\ShieldCache;
 
@@ -18,7 +18,7 @@ class UserController extends Controller
         return $this->userQuery()->get();
     }
 
-    public function store(CreateUserRequest $request)
+    public function store(ShieldCreateUserRequest $request)
     {
         $userClass = $this->userClass();
 
@@ -32,7 +32,7 @@ class UserController extends Controller
         $model = new $userClass;
 
         // Use validated() if it's NOT the default CreateUserRequest
-        if (get_class($request) !== CreateUserRequest::class) {
+        if (get_class($request) !== ShieldCreateUserRequest::class) {
             $validatedData = $request->validated();
             $userData = array_intersect_key($validatedData, array_flip($model->getFillable()));
         } else {
@@ -82,7 +82,7 @@ class UserController extends Controller
     //        return $user;
     //    }
 
-    public function login(LoginRequest $request)
+    public function login(ShieldLoginRequest $request)
     {
         $data = $request->validated();
         $userClass = $this->userClass();

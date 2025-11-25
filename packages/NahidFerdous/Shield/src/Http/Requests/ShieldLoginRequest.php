@@ -4,7 +4,7 @@ namespace NahidFerdous\Shield\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class LoginRequest extends FormRequest
+class ShieldLoginRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -24,7 +24,7 @@ class LoginRequest extends FormRequest
             $fields = explode('|', $credentialField);
 
             // Accept a generic 'login' field OR any of the specific fields
-            $rules['login'] = 'required_without_all:' . implode(',', $fields) . '|string';
+            $rules['login'] = 'required_without_all:'.implode(',', $fields).'|string';
 
             foreach ($fields as $field) {
                 if ($field === 'email') {
