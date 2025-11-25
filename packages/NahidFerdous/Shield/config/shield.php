@@ -36,7 +36,7 @@ return [
         'create_user' => \NahidFerdous\Shield\Http\Requests\CreateUserRequest::class,
         'login' => [
             'request_class' => \NahidFerdous\Shield\Http\Requests\LoginRequest::class,
-            'credential_field' => 'email', // can be 'email', 'mobile', 'email|mobile' or custom
+            'credential_field' => 'email', // can be 'email', 'mobile', 'email|mobile', 'email|mobile|username' or custom etc ...
             'verification_field' => 'email_verified_at',
             'check_verified' => false,
         ],
