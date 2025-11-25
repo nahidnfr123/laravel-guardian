@@ -56,6 +56,7 @@ use NahidFerdous\Shield\Http\Middleware\EnsureAnyShieldRole;
 use NahidFerdous\Shield\Http\Middleware\EnsureShieldPrivilege;
 use NahidFerdous\Shield\Http\Middleware\EnsureShieldRole;
 use NahidFerdous\Shield\Http\Middleware\ShieldLog;
+use NahidFerdous\Shield\Http\Requests\CreateUserRequest;
 use NahidFerdous\Shield\Models\Privilege;
 use NahidFerdous\Shield\Models\Role;
 
@@ -64,6 +65,7 @@ class ShieldServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->mergeConfigFrom(__DIR__.'/../../config/shield.php', 'shield');
+        $this->registerValidations();
     }
 
     public function boot(): void
@@ -78,6 +80,22 @@ class ShieldServiceProvider extends ServiceProvider
             $this->loadMigrationsFrom(__DIR__.'/../../database/migrations');
             $this->loadFactoriesFrom(__DIR__.'/../../database/factories');
         }
+    }
+
+    protected function registerValidations(): void
+    {
+        // Bind the CreateUserRequest to the custom class from config
+        $this->app->bind(CreateUserRequest::class, function ($app) {
+            $customClass = config('shield.validation.create_user');
+
+            // If custom class is set and different from default, use it
+            if ($customClass && $customClass !== CreateUserRequest::class) {
+                return $app->make($customClass);
+            }
+
+            // Otherwise use the default
+            return $app->make(CreateUserRequest::class);
+        });
     }
 
     protected function registerRoutes(): void

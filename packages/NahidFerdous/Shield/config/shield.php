@@ -32,6 +32,16 @@ return [
         'role_privilege' => 'privilege_role',
     ],
 
+    'validation' => [
+        'create_user' => \NahidFerdous\Shield\Http\Requests\CreateUserRequest::class,
+        'login' => [
+            'request_class' => \NahidFerdous\Shield\Http\Requests\LoginRequest::class,
+            'credential_field' => 'email', // can be 'email', 'mobile', 'email|mobile' or custom
+            'verification_field' => 'email_verified_at',
+            'check_verified' => false,
+        ],
+    ],
+
     'default_user_role_slug' => env('DEFAULT_ROLE_SLUG', 'user'),
 
     'protected_role_slugs' => ['admin', 'super-admin'],

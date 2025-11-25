@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Sanctum\Exceptions\MissingAbilityException;
+use NahidFerdous\Shield\Http\Requests\CreateUserRequest;
+use NahidFerdous\Shield\Http\Requests\LoginRequest;
 use NahidFerdous\Shield\Models\Role;
 use NahidFerdous\Shield\Support\ShieldCache;
 
@@ -16,41 +18,33 @@ class UserController extends Controller
         return $this->userQuery()->get();
     }
 
-    public function store(Request $request)
+    public function store(CreateUserRequest $request)
     {
-        $data = $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
-        ]);
-
         $userClass = $this->userClass();
-        $existing = $userClass::query()->where('email', $data['email'])->first();
 
+        // Check if a user exists
+        $existing = $userClass::query()->where('email', $request->email)->first();
         if ($existing) {
             return response(['error' => 1, 'message' => 'User already exists'], 409);
         }
 
-        // Get all fillable fields from the model
+        // Get only fillable fields from the request
         $model = new $userClass;
-        $fillable = $model->getFillable();
 
-        // Prepare data for only fillable fields that exist in the request
-        $userData = [];
-        foreach ($fillable as $field) {
-            if ($request->has($field)) {
-                $userData[$field] = $field === 'password'
-                    ? Hash::make($request->input($field))
-                    : $request->input($field);
-            }
+        // Use validated() if it's NOT the default CreateUserRequest
+        if (get_class($request) !== CreateUserRequest::class) {
+            $validatedData = $request->validated();
+            $userData = array_intersect_key($validatedData, array_flip($model->getFillable()));
+        } else {
+            $userData = $request->only($model->getFillable());
+        }
+
+        // Hash password if present
+        if (isset($userData['password'])) {
+            $userData['password'] = Hash::make($userData['password']);
         }
 
         $user = $userClass::create($userData);
-        //        /** @var \Illuminate\Database\Eloquent\Model $user */
-        //        $user = $userClass::create([
-        //            'email' => $data['email'],
-        //            'password' => Hash::make($data['password']),
-        //            'name' => $data['name'],
-        //        ]);
 
         $defaultRoleSlug = config('shield.default_user_role_slug', 'user');
         $user->roles()->attach(Role::where('slug', $defaultRoleSlug)->first());
@@ -59,28 +53,103 @@ class UserController extends Controller
         return $user;
     }
 
-    public function login(Request $request)
+    //    public function store(Request $request)
+    //    {
+    //        $creds = $request->validate([
+    //            'email' => 'required|email',
+    //            'password' => 'required',
+    //            'name' => 'nullable|string',
+    //        ]);
+    //
+    //        $userClass = $this->userClass();
+    //        $existing = $userClass::query()->where('email', $creds['email'])->first();
+    //
+    //        if ($existing) {
+    //            return response(['error' => 1, 'message' => 'user already exists'], 409);
+    //        }
+    //
+    //        /** @var \Illuminate\Database\Eloquent\Model $user */
+    //        $user = $userClass::create([
+    //            'email' => $creds['email'],
+    //            'password' => Hash::make($creds['password']),
+    //            'name' => $creds['name'],
+    //        ]);
+    //
+    //        $defaultRoleSlug = config('shield.default_user_role_slug', 'user');
+    //        $user->roles()->attach(Role::where('slug', $defaultRoleSlug)->first());
+    //        ShieldCache::forgetUser($user);
+    //
+    //        return $user;
+    //    }
+
+    public function login(LoginRequest $request)
     {
-        $creds = $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
-        ]);
-
+        $data = $request->validated();
         $userClass = $this->userClass();
-        $user = $userClass::where('email', $creds['email'])->first();
 
-        if (! $user || ! Hash::check($request->password, $user->password)) {
+        // Get the credential field from config
+        $credentialField = config('shield.validation.login.credential_field', 'email');
+
+        // Handle multiple credential fields (e.g., 'email|mobile')
+        if (str_contains($credentialField, '|')) {
+            $fields = explode('|', $credentialField);
+            $user = null;
+
+            // Try each field until we find a match
+            foreach ($fields as $field) {
+                if (isset($data[$field])) {
+                    $user = $userClass::where($field, $data[$field])->first();
+                    if ($user) {
+                        break;
+                    }
+                }
+            }
+
+            // If still no user found, try a generic 'login' field
+            if (!$user && isset($data['login'])) {
+                foreach ($fields as $field) {
+                    $user = $userClass::where($field, $data['login'])->first();
+                    if ($user) {
+                        break;
+                    }
+                }
+            }
+        } else {
+            // Single credential field
+            $loginValue = $data[$credentialField] ?? $data['login'] ?? null;
+
+            if (!$loginValue) {
+                return response(['error' => 1, 'message' => 'invalid credentials'], 401);
+            }
+
+            $user = $userClass::where($credentialField, $loginValue)->first();
+        }
+
+        // Check credentials
+        if (!$user || !Hash::check($request->password, $user->password)) {
             return response(['error' => 1, 'message' => 'invalid credentials'], 401);
         }
 
+        // Check if user is suspended
         if ($this->userIsSuspended($user)) {
             return response(['error' => 1, 'message' => 'user is suspended'], 423);
         }
 
+        // Check if verification is required
+        if (config('shield.validation.login.check_verified', false)) {
+            $verificationField = config('shield.validation.login.verification_field', 'email_verified_at');
+
+            if (!$user->{$verificationField}) {
+                return response(['error' => 1, 'message' => 'account not verified'], 403);
+            }
+        }
+
+        // Delete previous tokens if configured
         if (config('shield.delete_previous_access_tokens_on_login', false)) {
             $user->tokens()->delete();
         }
 
+        // Create token with roles
         $roles = $user->roles->pluck('slug')->all();
         $token = $user->createToken('shield-api-token', $roles)->plainTextToken;
 
