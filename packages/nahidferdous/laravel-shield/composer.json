@@ -1,0 +1,53 @@
+{
+    "name": "nahidferdous/laravel-shield",
+    "description": "Shield - zero-config API boilerplate packaged for Laravel 12 projects",
+    "keywords": [
+        "laravel",
+        "sanctum",
+        "roles",
+        "api"
+    ],
+    "license": "MIT",
+    "type": "library",
+    "require": {
+        "php": "^8.2",
+        "laravel/framework": "^12.0",
+        "laravel/sanctum": "^4.0"
+    },
+    "require-dev": {
+        "laravel/pint": "^1.25",
+        "nunomaduro/collision": "^8.6",
+        "orchestra/testbench": "^10.0",
+        "pestphp/pest": "^3.0",
+        "pestphp/pest-plugin-laravel": "^3.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "NahidFerdous\\Shield\\": "src/",
+            "NahidFerdous\\Shield\\Database\\": "database/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "NahidFerdous\\Shield\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/pest"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+              "ShieldServiceProvider"
+            ]
+        }
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
