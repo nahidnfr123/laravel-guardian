@@ -53,35 +53,6 @@ class UserController extends Controller
         return $user;
     }
 
-    //    public function store(Request $request)
-    //    {
-    //        $creds = $request->validate([
-    //            'email' => 'required|email',
-    //            'password' => 'required',
-    //            'name' => 'nullable|string',
-    //        ]);
-    //
-    //        $userClass = $this->userClass();
-    //        $existing = $userClass::query()->where('email', $creds['email'])->first();
-    //
-    //        if ($existing) {
-    //            return response(['error' => 1, 'message' => 'user already exists'], 409);
-    //        }
-    //
-    //        /** @var \Illuminate\Database\Eloquent\Model $user */
-    //        $user = $userClass::create([
-    //            'email' => $creds['email'],
-    //            'password' => Hash::make($creds['password']),
-    //            'name' => $creds['name'],
-    //        ]);
-    //
-    //        $defaultRoleSlug = config('shield.default_user_role_slug', 'user');
-    //        $user->roles()->attach(Role::where('slug', $defaultRoleSlug)->first());
-    //        ShieldCache::forgetUser($user);
-    //
-    //        return $user;
-    //    }
-
     public function login(ShieldLoginRequest $request)
     {
         $data = $request->validated();
