@@ -1,6 +1,6 @@
 <?php
 
-namespace HasinHayder\Tyro\Console\Commands;
+namespace NahidFerdous\Guardian\Console\Commands;
 
 class RoleUsersCommand extends BaseTyroCommand
 {

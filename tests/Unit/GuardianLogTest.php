@@ -1,14 +1,14 @@
 <?php
 
-namespace HasinHayder\Tyro\Tests\Unit;
+namespace NahidFerdous\Guardian\Tests\Unit;
 
-use HasinHayder\Tyro\Http\Middleware\TyroLog;
-use HasinHayder\Tyro\Tests\TestCase;
+use NahidFerdous\Guardian\Http\Middleware\GuardianLog;
+use NahidFerdous\Guardian\Tests\TestCase;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
 
-class TyroLogTest extends TestCase
+class GuardianLogTest extends TestCase
 {
     public function test_it_silences_when_debug_disabled(): void
     {
@@ -19,7 +19,7 @@ class TyroLogTest extends TestCase
         $request = Request::create('/api/test', 'GET');
         $response = new Response('', 200);
 
-        (new TyroLog)->terminate($request, $response);
+        (new GuardianLog)->terminate($request, $response);
 
         Log::shouldNotHaveReceived('info');
         Log::shouldNotHaveReceived('debug');
@@ -34,7 +34,7 @@ class TyroLogTest extends TestCase
         $request = Request::create('/api/test', 'GET');
         $response = new Response('', 200);
 
-        (new TyroLog)->terminate($request, $response);
+        (new GuardianLog)->terminate($request, $response);
 
         Log::shouldHaveReceived('info')->twice();
         Log::shouldHaveReceived('debug')->times(4);

@@ -1,9 +1,9 @@
 <?php
 
-namespace HasinHayder\Tyro\Console\Commands;
+namespace NahidFerdous\Guardian\Console\Commands;
 
-use HasinHayder\Tyro\Models\Privilege;
-use HasinHayder\Tyro\Support\TyroCache;
+use NahidFerdous\Guardian\Models\Privilege;
+use NahidFerdous\Guardian\Support\GuardianCache;
 use Illuminate\Support\Facades\DB;
 
 class PurgePrivilegesCommand extends BaseTyroCommand
@@ -22,7 +22,7 @@ class PurgePrivilegesCommand extends BaseTyroCommand
 
         DB::table(config('tyro.tables.role_privilege', 'privilege_role'))->truncate();
         $deleted = Privilege::query()->delete();
-        TyroCache::forgetAllUsersWithRoles();
+        GuardianCache::forgetAllUsersWithRoles();
 
         $this->info("Deleted {$deleted} privilege(s).");
 

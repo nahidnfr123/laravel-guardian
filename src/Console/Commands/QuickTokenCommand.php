@@ -1,6 +1,6 @@
 <?php
 
-namespace HasinHayder\Tyro\Console\Commands;
+namespace NahidFerdous\Guardian\Console\Commands;
 
 class QuickTokenCommand extends BaseTyroCommand {
     protected $signature = 'tyro:quick-token {user? : User ID or email} {--name=Tyro Quick Token : Token name}';

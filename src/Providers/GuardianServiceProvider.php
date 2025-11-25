@@ -1,66 +1,66 @@
 <?php
 
-namespace HasinHayder\Tyro\Providers;
+namespace NahidFerdous\Guardian\Providers;
 
-use HasinHayder\Tyro\Console\Commands\AboutCommand;
-use HasinHayder\Tyro\Console\Commands\AddPrivilegeCommand;
-use HasinHayder\Tyro\Console\Commands\AddRoleCommand;
-use HasinHayder\Tyro\Console\Commands\AssignRoleCommand;
-use HasinHayder\Tyro\Console\Commands\AttachPrivilegeCommand;
-use HasinHayder\Tyro\Console\Commands\CreateUserCommand;
-use HasinHayder\Tyro\Console\Commands\DeletePrivilegeCommand;
-use HasinHayder\Tyro\Console\Commands\DeleteRoleCommand;
-use HasinHayder\Tyro\Console\Commands\DeleteUserCommand;
-use HasinHayder\Tyro\Console\Commands\DeleteUserRoleCommand;
-use HasinHayder\Tyro\Console\Commands\DetachPrivilegeCommand;
-use HasinHayder\Tyro\Console\Commands\DocCommand;
-use HasinHayder\Tyro\Console\Commands\FlushRolesCommand;
-use HasinHayder\Tyro\Console\Commands\InstallCommand;
-use HasinHayder\Tyro\Console\Commands\ListPrivilegesCommand;
-use HasinHayder\Tyro\Console\Commands\ListRolesCommand;
-use HasinHayder\Tyro\Console\Commands\ListRolesWithPrivilegesCommand;
-use HasinHayder\Tyro\Console\Commands\ListUsersCommand;
-use HasinHayder\Tyro\Console\Commands\ListUsersWithRolesCommand;
-use HasinHayder\Tyro\Console\Commands\LoginCommand;
-use HasinHayder\Tyro\Console\Commands\LogoutAllCommand;
-use HasinHayder\Tyro\Console\Commands\LogoutAllUsersCommand;
-use HasinHayder\Tyro\Console\Commands\LogoutCommand;
-use HasinHayder\Tyro\Console\Commands\MeCommand;
-use HasinHayder\Tyro\Console\Commands\PostmanCollectionCommand;
-use HasinHayder\Tyro\Console\Commands\PrepareUserModelCommand;
-use HasinHayder\Tyro\Console\Commands\PublishConfigCommand;
-use HasinHayder\Tyro\Console\Commands\PublishMigrationsCommand;
-use HasinHayder\Tyro\Console\Commands\PurgePrivilegesCommand;
-use HasinHayder\Tyro\Console\Commands\QuickTokenCommand;
-use HasinHayder\Tyro\Console\Commands\RoleUsersCommand;
-use HasinHayder\Tyro\Console\Commands\SeedCommand;
-use HasinHayder\Tyro\Console\Commands\SeedPrivilegesCommand;
-use HasinHayder\Tyro\Console\Commands\SeedRolesCommand;
-use HasinHayder\Tyro\Console\Commands\StarCommand;
-use HasinHayder\Tyro\Console\Commands\SuspendedUsersCommand;
-use HasinHayder\Tyro\Console\Commands\SuspendUserCommand;
-use HasinHayder\Tyro\Console\Commands\UnsuspendUserCommand;
-use HasinHayder\Tyro\Console\Commands\UpdatePrivilegeCommand;
-use HasinHayder\Tyro\Console\Commands\UpdateRoleCommand;
-use HasinHayder\Tyro\Console\Commands\UpdateUserCommand;
-use HasinHayder\Tyro\Console\Commands\UserPrivilegesCommand;
-use HasinHayder\Tyro\Console\Commands\UserRolesCommand;
-use HasinHayder\Tyro\Console\Commands\VersionCommand;
+use NahidFerdous\Guardian\Console\Commands\AboutCommand;
+use NahidFerdous\Guardian\Console\Commands\AddPrivilegeCommand;
+use NahidFerdous\Guardian\Console\Commands\AddRoleCommand;
+use NahidFerdous\Guardian\Console\Commands\AssignRoleCommand;
+use NahidFerdous\Guardian\Console\Commands\AttachPrivilegeCommand;
+use NahidFerdous\Guardian\Console\Commands\CreateUserCommand;
+use NahidFerdous\Guardian\Console\Commands\DeletePrivilegeCommand;
+use NahidFerdous\Guardian\Console\Commands\DeleteRoleCommand;
+use NahidFerdous\Guardian\Console\Commands\DeleteUserCommand;
+use NahidFerdous\Guardian\Console\Commands\DeleteUserRoleCommand;
+use NahidFerdous\Guardian\Console\Commands\DetachPrivilegeCommand;
+use NahidFerdous\Guardian\Console\Commands\DocCommand;
+use NahidFerdous\Guardian\Console\Commands\FlushRolesCommand;
+use NahidFerdous\Guardian\Console\Commands\InstallCommand;
+use NahidFerdous\Guardian\Console\Commands\ListPrivilegesCommand;
+use NahidFerdous\Guardian\Console\Commands\ListRolesCommand;
+use NahidFerdous\Guardian\Console\Commands\ListRolesWithPrivilegesCommand;
+use NahidFerdous\Guardian\Console\Commands\ListUsersCommand;
+use NahidFerdous\Guardian\Console\Commands\ListUsersWithRolesCommand;
+use NahidFerdous\Guardian\Console\Commands\LoginCommand;
+use NahidFerdous\Guardian\Console\Commands\LogoutAllCommand;
+use NahidFerdous\Guardian\Console\Commands\LogoutAllUsersCommand;
+use NahidFerdous\Guardian\Console\Commands\LogoutCommand;
+use NahidFerdous\Guardian\Console\Commands\MeCommand;
+use NahidFerdous\Guardian\Console\Commands\PostmanCollectionCommand;
+use NahidFerdous\Guardian\Console\Commands\PrepareUserModelCommand;
+use NahidFerdous\Guardian\Console\Commands\PublishConfigCommand;
+use NahidFerdous\Guardian\Console\Commands\PublishMigrationsCommand;
+use NahidFerdous\Guardian\Console\Commands\PurgePrivilegesCommand;
+use NahidFerdous\Guardian\Console\Commands\QuickTokenCommand;
+use NahidFerdous\Guardian\Console\Commands\RoleUsersCommand;
+use NahidFerdous\Guardian\Console\Commands\SeedCommand;
+use NahidFerdous\Guardian\Console\Commands\SeedPrivilegesCommand;
+use NahidFerdous\Guardian\Console\Commands\SeedRolesCommand;
+use NahidFerdous\Guardian\Console\Commands\StarCommand;
+use NahidFerdous\Guardian\Console\Commands\SuspendedUsersCommand;
+use NahidFerdous\Guardian\Console\Commands\SuspendUserCommand;
+use NahidFerdous\Guardian\Console\Commands\UnsuspendUserCommand;
+use NahidFerdous\Guardian\Console\Commands\UpdatePrivilegeCommand;
+use NahidFerdous\Guardian\Console\Commands\UpdateRoleCommand;
+use NahidFerdous\Guardian\Console\Commands\UpdateUserCommand;
+use NahidFerdous\Guardian\Console\Commands\UserPrivilegesCommand;
+use NahidFerdous\Guardian\Console\Commands\UserRolesCommand;
+use NahidFerdous\Guardian\Console\Commands\VersionCommand;
 
-use HasinHayder\Tyro\Http\Middleware\EnsureAnyTyroPrivilege;
-use HasinHayder\Tyro\Http\Middleware\EnsureAnyTyroRole;
-use HasinHayder\Tyro\Http\Middleware\EnsureTyroPrivilege;
-use HasinHayder\Tyro\Http\Middleware\EnsureTyroRole;
-use HasinHayder\Tyro\Http\Middleware\TyroLog;
-use HasinHayder\Tyro\Models\Privilege;
-use HasinHayder\Tyro\Models\Role;
+use NahidFerdous\Guardian\Http\Middleware\EnsureAnyGuardianPrivilege;
+use NahidFerdous\Guardian\Http\Middleware\EnsureAnyGuardianRole;
+use NahidFerdous\Guardian\Http\Middleware\EnsureGuardianPrivilege;
+use NahidFerdous\Guardian\Http\Middleware\EnsureGuardianRole;
+use NahidFerdous\Guardian\Http\Middleware\GuardianLog;
+use NahidFerdous\Guardian\Models\Privilege;
+use NahidFerdous\Guardian\Models\Role;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Sanctum\Http\Middleware\CheckAbilities;
 use Laravel\Sanctum\Http\Middleware\CheckForAnyAbility;
 
-class TyroServiceProvider extends ServiceProvider {
+class GuardianServiceProvider extends ServiceProvider {
     public function register(): void {
         $this->mergeConfigFrom(__DIR__ . '/../../config/tyro.php', 'tyro');
     }
@@ -99,11 +99,11 @@ class TyroServiceProvider extends ServiceProvider {
     protected function registerMiddleware(): void {
         /** @var Router $router */
         $router = $this->app['router'];
-        $router->aliasMiddleware('tyro.log', TyroLog::class);
-        $router->aliasMiddleware('privilege', EnsureTyroPrivilege::class);
-        $router->aliasMiddleware('privileges', EnsureAnyTyroPrivilege::class);
-        $router->aliasMiddleware('role', EnsureTyroRole::class);
-        $router->aliasMiddleware('roles', EnsureAnyTyroRole::class);
+        $router->aliasMiddleware('tyro.log', GuardianLog::class);
+        $router->aliasMiddleware('privilege', EnsureGuardianPrivilege::class);
+        $router->aliasMiddleware('privileges', EnsureAnyGuardianPrivilege::class);
+        $router->aliasMiddleware('role', EnsureGuardianRole::class);
+        $router->aliasMiddleware('roles', EnsureAnyGuardianRole::class);
 
         if (!array_key_exists('ability', $router->getMiddleware())) {
             $router->aliasMiddleware('ability', CheckForAnyAbility::class);

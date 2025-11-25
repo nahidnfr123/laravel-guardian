@@ -1,6 +1,6 @@
 <?php
 
-namespace HasinHayder\Tyro\Http\Controllers;
+namespace NahidFerdous\Guardian\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;

@@ -1,10 +1,10 @@
 <?php
 
-namespace HasinHayder\Tyro\Tests;
+namespace NahidFerdous\Guardian\Tests;
 
-use HasinHayder\Tyro\Database\Seeders\TyroSeeder;
-use HasinHayder\Tyro\Providers\TyroServiceProvider;
-use HasinHayder\Tyro\Tests\Fixtures\User;
+use NahidFerdous\Guardian\Database\Seeders\TyroSeeder;
+use NahidFerdous\Guardian\Providers\GuardianServiceProvider;
+use NahidFerdous\Guardian\Tests\Fixtures\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Mockery;
 use Orchestra\Testbench\TestCase as Orchestra;
@@ -18,7 +18,7 @@ abstract class TestCase extends Orchestra {
         parent::setUp();
 
         Factory::guessFactoryNamesUsing(function (string $modelName) {
-            return 'HasinHayder\\Tyro\\Database\\Factories\\' . class_basename($modelName) . 'Factory';
+            return 'NahidFerdous\\Tyro\\Database\\Factories\\' . class_basename($modelName) . 'Factory';
         });
 
         $this->artisan('migrate', ['--database' => 'testing'])->run();
@@ -53,7 +53,7 @@ abstract class TestCase extends Orchestra {
 
     protected function getPackageProviders($app): array {
         return [
-            TyroServiceProvider::class,
+            GuardianServiceProvider::class,
             \Laravel\Sanctum\SanctumServiceProvider::class,
         ];
     }

@@ -1,9 +1,9 @@
 <?php
 
-namespace HasinHayder\Tyro\Console\Commands;
+namespace NahidFerdous\Guardian\Console\Commands;
 
-use HasinHayder\Tyro\Database\Seeders\RoleSeeder;
-use HasinHayder\Tyro\Support\TyroCache;
+use NahidFerdous\Guardian\Database\Seeders\RoleSeeder;
+use NahidFerdous\Guardian\Support\GuardianCache;
 
 class SeedRolesCommand extends BaseTyroCommand
 {
@@ -22,7 +22,7 @@ class SeedRolesCommand extends BaseTyroCommand
         /** @var RoleSeeder $seeder */
         $seeder = $this->laravel->make(RoleSeeder::class);
         $seeder->run();
-        TyroCache::forgetAllUsersWithRoles();
+        GuardianCache::forgetAllUsersWithRoles();
 
         $this->info('Default Tyro roles have been re-seeded.');
 

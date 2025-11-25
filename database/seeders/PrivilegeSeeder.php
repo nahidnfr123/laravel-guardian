@@ -1,9 +1,9 @@
 <?php
 
-namespace HasinHayder\Tyro\Database\Seeders;
+namespace NahidFerdous\Guardian\Database\Seeders;
 
-use HasinHayder\Tyro\Models\Privilege;
-use HasinHayder\Tyro\Models\Role;
+use NahidFerdous\Guardian\Models\Privilege;
+use NahidFerdous\Guardian\Models\Role;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Arr;
 

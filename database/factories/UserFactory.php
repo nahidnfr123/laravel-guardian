@@ -1,6 +1,6 @@
 <?php
 
-namespace HasinHayder\Tyro\Database\Factories;
+namespace NahidFerdous\Guardian\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;

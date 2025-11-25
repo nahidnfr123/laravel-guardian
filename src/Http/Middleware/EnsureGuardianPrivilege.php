@@ -1,13 +1,13 @@
 <?php
 
-namespace HasinHayder\Tyro\Http\Middleware;
+namespace NahidFerdous\Guardian\Http\Middleware;
 
 use Closure;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 
-class EnsureTyroPrivilege
+class EnsureGuardianPrivilege
 {
     public function handle(Request $request, Closure $next, string ...$privileges)
     {

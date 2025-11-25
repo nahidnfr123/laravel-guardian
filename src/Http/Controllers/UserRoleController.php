@@ -1,9 +1,9 @@
 <?php
 
-namespace HasinHayder\Tyro\Http\Controllers;
+namespace NahidFerdous\Guardian\Http\Controllers;
 
-use HasinHayder\Tyro\Models\Role;
-use HasinHayder\Tyro\Support\TyroCache;
+use NahidFerdous\Guardian\Models\Role;
+use NahidFerdous\Guardian\Support\GuardianCache;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 
@@ -26,7 +26,7 @@ class UserRoleController extends Controller
         $role = Role::findOrFail($data['role_id']);
         if (! $user->roles()->find($role->id)) {
             $user->roles()->attach($role);
-            TyroCache::forgetUser($user);
+            GuardianCache::forgetUser($user);
         }
 
         return $user->load('roles');
@@ -36,7 +36,7 @@ class UserRoleController extends Controller
     {
         $user = $this->resolveUser($user);
         $user->roles()->detach($role);
-        TyroCache::forgetUser($user);
+        GuardianCache::forgetUser($user);
 
         return $user->load('roles');
     }

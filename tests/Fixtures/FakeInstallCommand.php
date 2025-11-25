@@ -1,8 +1,8 @@
 <?php
 
-namespace HasinHayder\Tyro\Tests\Fixtures;
+namespace NahidFerdous\Guardian\Tests\Fixtures;
 
-use HasinHayder\Tyro\Console\Commands\InstallCommand;
+use NahidFerdous\Guardian\Console\Commands\InstallCommand;
 
 class FakeInstallCommand extends InstallCommand
 {

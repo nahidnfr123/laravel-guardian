@@ -1,8 +1,8 @@
 <?php
 
-namespace HasinHayder\Tyro\Database\Factories;
+namespace NahidFerdous\Guardian\Database\Factories;
 
-use HasinHayder\Tyro\Models\Privilege;
+use NahidFerdous\Guardian\Models\Privilege;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

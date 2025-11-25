@@ -1,12 +1,12 @@
 <?php
 
-namespace HasinHayder\Tyro\Http\Middleware;
+namespace NahidFerdous\Guardian\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
-class TyroLog
+class GuardianLog
 {
     public function handle(Request $request, Closure $next)
     {

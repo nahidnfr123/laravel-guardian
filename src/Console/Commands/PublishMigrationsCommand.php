@@ -1,6 +1,6 @@
 <?php
 
-namespace HasinHayder\Tyro\Console\Commands;
+namespace NahidFerdous\Guardian\Console\Commands;
 
 class PublishMigrationsCommand extends BaseTyroCommand {
     protected $signature = 'tyro:publish-migrations {--force : Overwrite the existing migration files if they already exist}';

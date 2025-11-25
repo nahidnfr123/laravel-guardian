@@ -1,8 +1,8 @@
 <?php
 
-namespace HasinHayder\Tyro\Console\Commands;
+namespace NahidFerdous\Guardian\Console\Commands;
 
-use HasinHayder\Tyro\Support\TyroCache;
+use NahidFerdous\Guardian\Support\GuardianCache;
 
 class DeleteUserRoleCommand extends BaseTyroCommand
 {
@@ -23,7 +23,7 @@ class DeleteUserRoleCommand extends BaseTyroCommand
         }
 
         if (! method_exists($user, 'roles')) {
-            $this->error('The configured user model does not use the HasTyroRoles trait.');
+            $this->error('The configured user model does not use the HasGuardianRoles trait.');
 
             return self::FAILURE;
         }
@@ -36,7 +36,7 @@ class DeleteUserRoleCommand extends BaseTyroCommand
         }
 
         $detached = $user->roles()->detach($role);
-        TyroCache::forgetUser($user);
+        GuardianCache::forgetUser($user);
 
         if ($detached) {
             $this->info(sprintf('Role "%s" removed from %s.', $role->slug, $user->email));

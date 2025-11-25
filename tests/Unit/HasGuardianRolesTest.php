@@ -1,14 +1,14 @@
 <?php
 
-namespace HasinHayder\Tyro\Tests\Unit;
+namespace NahidFerdous\Guardian\Tests\Unit;
 
-use HasinHayder\Tyro\Models\Privilege;
-use HasinHayder\Tyro\Models\Role;
-use HasinHayder\Tyro\Support\TyroCache;
-use HasinHayder\Tyro\Tests\TestCase;
+use NahidFerdous\Guardian\Models\Privilege;
+use NahidFerdous\Guardian\Models\Role;
+use NahidFerdous\Guardian\Support\GuardianCache;
+use NahidFerdous\Guardian\Tests\TestCase;
 use Illuminate\Support\Facades\Cache;
 
-class HasTyroRolesTest extends TestCase
+class HasGuardianRolesTest extends TestCase
 {
     public function test_user_can_returns_true_when_role_has_privilege(): void
     {
@@ -50,7 +50,7 @@ class HasTyroRolesTest extends TestCase
         $user->roles()->detach($role);
         $this->assertTrue($user->fresh()->hasRole('user'));
 
-        TyroCache::forgetUser($user);
+        GuardianCache::forgetUser($user);
 
         $this->assertFalse($user->fresh()->hasRole('user'));
     }
@@ -76,7 +76,7 @@ class HasTyroRolesTest extends TestCase
         $role->privileges()->detach($privilege);
         $this->assertTrue($user->fresh()->can('custom.export'));
 
-        TyroCache::forgetUsersByRole($role);
+        GuardianCache::forgetUsersByRole($role);
 
         $this->assertFalse($user->fresh()->can('custom.export'));
     }

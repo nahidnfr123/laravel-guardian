@@ -6,7 +6,7 @@ Thank you for considering contributing to Tyro! We appreciate your help in makin
 
 ### Reporting Bugs
 
-Before creating a bug report, please check [existing issues](https://github.com/hasinhayder/tyro/issues) to avoid duplicates.
+Before creating a bug report, please check [existing issues](https://github.com/NahidFerdous/tyro/issues) to avoid duplicates.
 
 When reporting a bug, include:
 
@@ -140,8 +140,8 @@ docs: update installation instructions
 ## Getting Help
 
 -   Check the [README](README.md) for documentation
--   Search [existing issues](https://github.com/hasinhayder/tyro/issues)
--   Open a [discussion](https://github.com/hasinhayder/tyro/discussions)
+-   Search [existing issues](https://github.com/NahidFerdous/tyro/issues)
+-   Open a [discussion](https://github.com/NahidFerdous/tyro/discussions)
 
 ## License
 

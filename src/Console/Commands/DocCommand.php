@@ -1,6 +1,6 @@
 <?php
 
-namespace HasinHayder\Tyro\Console\Commands;
+namespace NahidFerdous\Guardian\Console\Commands;
 
 class DocCommand extends BaseTyroCommand
 {
@@ -10,7 +10,7 @@ class DocCommand extends BaseTyroCommand
 
     public function handle(): int
     {
-        $url = 'https://github.com/hasinhayder/tyro';
+        $url = 'https://github.com/NahidFerdous/tyro';
 
         if (! $this->option('no-open') && $this->openUrl($url)) {
             $this->info('Opening Tyro documentation...');

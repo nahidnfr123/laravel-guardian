@@ -2,7 +2,7 @@
 
 # Guardian Package
 
-**Guardian** is the zero-config API boilerplate for Laravel 12. It ships with Sanctum authentication, role/ability management, ready-made routes, seeders, factories, middleware logging, and an extensible configuration layer so any Laravel app can install the same battle-tested API surface in minutes.
+**Guardian** is the zero-config API boilerplate for Laravel 12. It ships with Sanctum or Passport authentication + social authentication, role/ability management, ready-made routes, seeders, factories, middleware logging, and an extensible configuration layer so any Laravel app can install the same battle-tested API surface in minutes. Inspired by Tyro | https://github.com/hasinhayder/tyro
 
 ## Why Guardian?
 
@@ -23,7 +23,7 @@ Guardian is everything you need to stand up a secure Laravel API without writing
 
 ## Quick start (TL;DR)
 
-1. `composer require hasinhayder/guardian`
+1. `composer require NahidFerdous/guardian`
 2. `php artisan guardian:install` (wraps `install:api` + `migrate` + `seed` + `prepare-user-model` so Sanctum, User model and your database are ready)
 
 The rest of this document elaborates on those six steps and shows how to customize Guardian for your team.
@@ -33,7 +33,7 @@ The rest of this document elaborates on those six steps and shows how to customi
 ### 1. Install the package
 
 ```bash
-composer require hasinhayder/guardian
+composer require NahidFerdous/guardian
 ```
 
 Guardian's service provider is auto-discovered. Publish its assets if you want to customize them:
@@ -90,7 +90,7 @@ namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Laravel\Sanctum\HasApiTokens;
-use HasinHayder\Guardian\Concerns\HasGuardianRoles;
+use NahidFerdous\Guardian\Concerns\HasGuardianRoles;
 
 class User extends Authenticatable
 {
@@ -543,7 +543,7 @@ class ApiTokenController
 ### How do I assign or remove roles to a user from code?
 
 ```php
-use HasinHayder\Guardian\Models\Role;
+use NahidFerdous\Guardian\Models\Role;
 use App\Models\User;
 
 class UserRoleController
@@ -585,8 +585,8 @@ class UserRoleController
 ### How do I assign or remove privileges to a role?
 
 ```php
-use HasinHayder\Guardian\Models\Role;
-use HasinHayder\Guardian\Models\Privilege;
+use NahidFerdous\Guardian\Models\Role;
+use NahidFerdous\Guardian\Models\Privilege;
 
 class RolePrivilegeController
 {
@@ -636,7 +636,7 @@ class RolePrivilegeController
 ### How do I get the list of privileges in a role?
 
 ```php
-use HasinHayder\Guardian\Models\Role;
+use NahidFerdous\Guardian\Models\Role;
 
 class RolePrivilegesController
 {
@@ -666,7 +666,7 @@ class RolePrivilegesController
 The `Role` model includes `hasPrivilege()` and `hasPrivileges()` methods for checking privileges:
 
 ```php
-use HasinHayder\Guardian\Models\Role;
+use NahidFerdous\Guardian\Models\Role;
 
 class RoleCheckController
 {

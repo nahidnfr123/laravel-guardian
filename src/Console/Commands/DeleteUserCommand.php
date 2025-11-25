@@ -1,9 +1,9 @@
 <?php
 
-namespace HasinHayder\Tyro\Console\Commands;
+namespace NahidFerdous\Guardian\Console\Commands;
 
-use HasinHayder\Tyro\Models\Role;
-use HasinHayder\Tyro\Support\TyroCache;
+use NahidFerdous\Guardian\Models\Role;
+use NahidFerdous\Guardian\Support\GuardianCache;
 
 class DeleteUserCommand extends BaseTyroCommand
 {
@@ -38,7 +38,7 @@ class DeleteUserCommand extends BaseTyroCommand
             }
         }
 
-        TyroCache::forgetUser($user);
+        GuardianCache::forgetUser($user);
         $user->delete();
 
         $this->info(sprintf('User %s deleted.', $user->email));

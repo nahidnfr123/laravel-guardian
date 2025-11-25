@@ -1,8 +1,8 @@
 <?php
 
-namespace HasinHayder\Tyro\Console\Commands;
+namespace NahidFerdous\Guardian\Console\Commands;
 
-use HasinHayder\Tyro\Support\TyroCache;
+use NahidFerdous\Guardian\Support\GuardianCache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
@@ -61,7 +61,7 @@ class CreateUserCommand extends BaseTyroCommand {
             $defaultRole = $this->defaultRole();
             if ($defaultRole) {
                 $user->roles()->syncWithoutDetaching($defaultRole);
-                TyroCache::forgetUser($user);
+                GuardianCache::forgetUser($user);
             }
         }
 

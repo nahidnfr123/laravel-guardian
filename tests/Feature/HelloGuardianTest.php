@@ -1,10 +1,10 @@
 <?php
 
-namespace HasinHayder\Tyro\Tests\Feature;
+namespace NahidFerdous\Guardian\Tests\Feature;
 
-use HasinHayder\Tyro\Tests\TestCase;
+use NahidFerdous\Guardian\Tests\TestCase;
 
-class HelloTyroTest extends TestCase {
+class HelloGuardianTest extends TestCase {
     public function test_hello_tyro_endpoint_returns_message(): void {
         $response = $this->get('/api/tyro');
 

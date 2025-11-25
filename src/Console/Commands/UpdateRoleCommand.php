@@ -1,9 +1,9 @@
 <?php
 
-namespace HasinHayder\Tyro\Console\Commands;
+namespace NahidFerdous\Guardian\Console\Commands;
 
-use HasinHayder\Tyro\Models\Role;
-use HasinHayder\Tyro\Support\TyroCache;
+use NahidFerdous\Guardian\Models\Role;
+use NahidFerdous\Guardian\Support\GuardianCache;
 use Illuminate\Support\Str;
 
 class UpdateRoleCommand extends BaseTyroCommand
@@ -86,7 +86,7 @@ class UpdateRoleCommand extends BaseTyroCommand
             'slug' => $slug,
         ]);
 
-        TyroCache::forgetUsersByRole($role);
+        GuardianCache::forgetUsersByRole($role);
 
         $this->info(sprintf('Role "%s" updated.', $role->slug));
 

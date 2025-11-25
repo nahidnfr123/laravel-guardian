@@ -1,6 +1,6 @@
 <?php
 
-namespace HasinHayder\Tyro\Console\Commands;
+namespace NahidFerdous\Guardian\Console\Commands;
 
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;

@@ -1,8 +1,8 @@
 <?php
 
-namespace HasinHayder\Tyro\Console\Commands;
+namespace NahidFerdous\Guardian\Console\Commands;
 
-use HasinHayder\Tyro\Support\TyroCache;
+use NahidFerdous\Guardian\Support\GuardianCache;
 
 class AttachPrivilegeCommand extends BaseTyroCommand
 {
@@ -42,7 +42,7 @@ class AttachPrivilegeCommand extends BaseTyroCommand
         }
 
         $role->privileges()->syncWithoutDetaching($privilege);
-        TyroCache::forgetUsersByRole($role);
+        GuardianCache::forgetUsersByRole($role);
 
         $this->info("Privilege [{$privilege->slug}] attached to role [{$role->slug}].");
 

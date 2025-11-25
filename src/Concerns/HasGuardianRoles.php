@@ -1,15 +1,15 @@
 <?php
 
-namespace HasinHayder\Tyro\Concerns;
+namespace NahidFerdous\Guardian\Concerns;
 
-use HasinHayder\Tyro\Models\Role;
-use HasinHayder\Tyro\Models\UserRole;
-use HasinHayder\Tyro\Support\TyroCache;
+use NahidFerdous\Guardian\Models\Role;
+use NahidFerdous\Guardian\Models\UserRole;
+use NahidFerdous\Guardian\Support\GuardianCache;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 
-trait HasTyroRoles {
+trait HasGuardianRoles {
     protected ?array $tyroRoleSlugsCache = null;
 
     protected ?array $tyroPrivilegeSlugsCache = null;
@@ -33,7 +33,7 @@ trait HasTyroRoles {
      */
     public function assignRole(Role $role): void {
         $this->roles()->syncWithoutDetaching($role);
-        TyroCache::forgetUser($this->getKey());
+        GuardianCache::forgetUser($this->getKey());
         $this->flushTyroRuntimeCache();
     }
 
@@ -42,7 +42,7 @@ trait HasTyroRoles {
      */
     public function removeRole(Role $role): void {
         $this->roles()->detach($role);
-        TyroCache::forgetUser($this->getKey());
+        GuardianCache::forgetUser($this->getKey());
         $this->flushTyroRuntimeCache();
     }
 
@@ -122,7 +122,7 @@ trait HasTyroRoles {
      */
     public function tyroRoleSlugs(): array {
         $userId = $this->getKey();
-        $runtimeVersion = TyroCache::runtimeVersion($userId);
+        $runtimeVersion = GuardianCache::runtimeVersion($userId);
         if ($this->tyroRoleSlugsCache !== null && $this->tyroRoleSlugsVersion === $runtimeVersion) {
             return $this->tyroRoleSlugsCache;
         }
@@ -139,7 +139,7 @@ trait HasTyroRoles {
      */
     public function tyroPrivilegeSlugs(): array {
         $userId = $this->getKey();
-        $runtimeVersion = TyroCache::runtimeVersion($userId);
+        $runtimeVersion = GuardianCache::runtimeVersion($userId);
         if ($this->tyroPrivilegeSlugsCache !== null && $this->tyroPrivilegeSlugsVersion === $runtimeVersion) {
             return $this->tyroPrivilegeSlugsCache;
         }
@@ -160,7 +160,7 @@ trait HasTyroRoles {
             if ($this->relationLoaded('roles')) {
                 $slugs = $this->roles->pluck('slug')->all();
             } else {
-                $slugs = TyroCache::rememberRoleSlugs($userId, function () {
+                $slugs = GuardianCache::rememberRoleSlugs($userId, function () {
                     return $this->roles()->pluck('slug')->all();
                 });
             }
@@ -172,7 +172,7 @@ trait HasTyroRoles {
                     ->pluck('slug')
                     ->all();
             } else {
-                $slugs = TyroCache::rememberPrivilegeSlugs($userId, function () {
+                $slugs = GuardianCache::rememberPrivilegeSlugs($userId, function () {
                     return $this->roles()
                         ->with('privileges:id,slug')
                         ->get()

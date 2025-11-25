@@ -1,8 +1,8 @@
 <?php
 
-namespace HasinHayder\Tyro\Console\Commands;
+namespace NahidFerdous\Guardian\Console\Commands;
 
-use HasinHayder\Tyro\Support\TyroCache;
+use NahidFerdous\Guardian\Support\GuardianCache;
 
 class DeleteRoleCommand extends BaseTyroCommand
 {
@@ -34,7 +34,7 @@ class DeleteRoleCommand extends BaseTyroCommand
             return self::SUCCESS;
         }
 
-        TyroCache::forgetUsersByRole($role);
+        GuardianCache::forgetUsersByRole($role);
         $role->users()->detach();
         $role->delete();
 

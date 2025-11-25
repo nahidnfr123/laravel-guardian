@@ -1,10 +1,10 @@
 <?php
 
-namespace HasinHayder\Tyro\Tests\Feature;
+namespace NahidFerdous\Guardian\Tests\Feature;
 
-use HasinHayder\Tyro\Models\Privilege;
-use HasinHayder\Tyro\Models\Role;
-use HasinHayder\Tyro\Tests\TestCase;
+use NahidFerdous\Guardian\Models\Privilege;
+use NahidFerdous\Guardian\Models\Role;
+use NahidFerdous\Guardian\Tests\TestCase;
 use Illuminate\Testing\Fluent\AssertableJson;
 
 class PrivilegeTest extends TestCase {

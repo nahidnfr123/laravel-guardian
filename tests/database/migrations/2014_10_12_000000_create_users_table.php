@@ -1,6 +1,6 @@
 <?php
 
-use HasinHayder\Tyro\Tests\Fixtures\User;
+use NahidFerdous\Guardian\Tests\Fixtures\User;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;

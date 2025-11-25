@@ -1,8 +1,8 @@
 <?php
 
-namespace HasinHayder\Tyro\Console\Commands;
+namespace NahidFerdous\Guardian\Console\Commands;
 
-use HasinHayder\Tyro\Models\Role;
+use NahidFerdous\Guardian\Models\Role;
 
 class ListRolesWithPrivilegesCommand extends BaseTyroCommand
 {

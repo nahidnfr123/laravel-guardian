@@ -1,8 +1,8 @@
 <?php
 
-namespace HasinHayder\Tyro\Console\Commands;
+namespace NahidFerdous\Guardian\Console\Commands;
 
-use HasinHayder\Tyro\Models\Privilege;
+use NahidFerdous\Guardian\Models\Privilege;
 
 class AddPrivilegeCommand extends BaseTyroCommand
 {

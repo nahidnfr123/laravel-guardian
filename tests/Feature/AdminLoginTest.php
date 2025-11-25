@@ -1,8 +1,8 @@
 <?php
 
-namespace HasinHayder\Tyro\Tests\Feature;
+namespace NahidFerdous\Guardian\Tests\Feature;
 
-use HasinHayder\Tyro\Tests\TestCase;
+use NahidFerdous\Guardian\Tests\TestCase;
 use Illuminate\Testing\Fluent\AssertableJson;
 
 class AdminLoginTest extends TestCase {

@@ -1,6 +1,6 @@
 <?php
 
-namespace HasinHayder\Tyro\Console\Commands;
+namespace NahidFerdous\Guardian\Console\Commands;
 
 class ListUsersWithRolesCommand extends BaseTyroCommand
 {
@@ -14,7 +14,7 @@ class ListUsersWithRolesCommand extends BaseTyroCommand
         $userInstance = new $userClass;
 
         if (! method_exists($userInstance, 'roles')) {
-            $this->error('The configured user model does not include the HasTyroRoles trait.');
+            $this->error('The configured user model does not include the HasGuardianRoles trait.');
 
             return self::FAILURE;
         }

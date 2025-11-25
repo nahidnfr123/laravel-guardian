@@ -1,6 +1,6 @@
 <?php
 
-namespace HasinHayder\Tyro\Models;
+namespace NahidFerdous\Guardian\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;

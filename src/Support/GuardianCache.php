@@ -1,14 +1,14 @@
 <?php
 
-namespace HasinHayder\Tyro\Support;
+namespace NahidFerdous\Guardian\Support;
 
-use HasinHayder\Tyro\Models\Privilege;
-use HasinHayder\Tyro\Models\Role;
+use NahidFerdous\Guardian\Models\Privilege;
+use NahidFerdous\Guardian\Models\Role;
 use Illuminate\Contracts\Cache\Repository as CacheRepository;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
-class TyroCache
+class GuardianCache
 {
     protected static array $runtimeVersions = [];
 

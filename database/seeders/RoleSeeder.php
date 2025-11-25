@@ -1,8 +1,8 @@
 <?php
 
-namespace HasinHayder\Tyro\Database\Seeders;
+namespace NahidFerdous\Guardian\Database\Seeders;
 
-use HasinHayder\Tyro\Models\Role;
+use NahidFerdous\Guardian\Models\Role;
 use Illuminate\Database\Seeder;
 
 class RoleSeeder extends Seeder

@@ -1,9 +1,9 @@
 <?php
 
-namespace HasinHayder\Tyro\Console\Commands;
+namespace NahidFerdous\Guardian\Console\Commands;
 
-use HasinHayder\Tyro\Models\Privilege;
-use HasinHayder\Tyro\Support\TyroCache;
+use NahidFerdous\Guardian\Models\Privilege;
+use NahidFerdous\Guardian\Support\GuardianCache;
 
 class UpdatePrivilegeCommand extends BaseTyroCommand
 {
@@ -78,7 +78,7 @@ class UpdatePrivilegeCommand extends BaseTyroCommand
             'description' => $description,
         ]);
 
-        TyroCache::forgetUsersByPrivilege($privilege);
+        GuardianCache::forgetUsersByPrivilege($privilege);
 
         $this->info(sprintf('Privilege "%s" updated.', $privilege->slug));
 

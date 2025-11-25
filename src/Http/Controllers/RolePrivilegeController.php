@@ -1,10 +1,10 @@
 <?php
 
-namespace HasinHayder\Tyro\Http\Controllers;
+namespace NahidFerdous\Guardian\Http\Controllers;
 
-use HasinHayder\Tyro\Models\Privilege;
-use HasinHayder\Tyro\Models\Role;
-use HasinHayder\Tyro\Support\TyroCache;
+use NahidFerdous\Guardian\Models\Privilege;
+use NahidFerdous\Guardian\Models\Role;
+use NahidFerdous\Guardian\Support\GuardianCache;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Validation\Rule;
@@ -28,7 +28,7 @@ class RolePrivilegeController extends Controller
 
         $privilege = Privilege::findOrFail($data['privilege_id']);
         $role->privileges()->syncWithoutDetaching($privilege);
-        TyroCache::forgetUsersByRole($role);
+        GuardianCache::forgetUsersByRole($role);
 
         return $role->load('privileges');
     }
@@ -36,7 +36,7 @@ class RolePrivilegeController extends Controller
     public function destroy(Role $role, Privilege $privilege)
     {
         $role->privileges()->detach($privilege);
-        TyroCache::forgetUsersByRole($role);
+        GuardianCache::forgetUsersByRole($role);
 
         return $role->load('privileges');
     }

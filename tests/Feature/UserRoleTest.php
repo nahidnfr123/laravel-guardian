@@ -1,10 +1,10 @@
 <?php
 
-namespace HasinHayder\Tyro\Tests\Feature;
+namespace NahidFerdous\Guardian\Tests\Feature;
 
-use HasinHayder\Tyro\Models\Role;
-use HasinHayder\Tyro\Tests\Fixtures\User;
-use HasinHayder\Tyro\Tests\TestCase;
+use NahidFerdous\Guardian\Models\Role;
+use NahidFerdous\Guardian\Tests\Fixtures\User;
+use NahidFerdous\Guardian\Tests\TestCase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Testing\Fluent\AssertableJson;
 

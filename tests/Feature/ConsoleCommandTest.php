@@ -1,11 +1,11 @@
 <?php
 
-namespace HasinHayder\Tyro\Tests\Feature;
+namespace NahidFerdous\Guardian\Tests\Feature;
 
-use HasinHayder\Tyro\Models\Privilege;
-use HasinHayder\Tyro\Models\Role;
-use HasinHayder\Tyro\Tests\Fixtures\FakeInstallCommand;
-use HasinHayder\Tyro\Tests\TestCase;
+use NahidFerdous\Guardian\Models\Privilege;
+use NahidFerdous\Guardian\Models\Role;
+use NahidFerdous\Guardian\Tests\Fixtures\FakeInstallCommand;
+use NahidFerdous\Guardian\Tests\TestCase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -580,7 +580,7 @@ class ConsoleCommandTest extends TestCase {
 
     public function test_doc_command_can_print_url(): void {
         $this->artisan('tyro:doc', ['--no-open' => true])
-            ->expectsOutputToContain('https://github.com/hasinhayder/tyro')
+            ->expectsOutputToContain('https://github.com/NahidFerdous/tyro')
             ->assertExitCode(0);
     }
 
@@ -731,8 +731,8 @@ PHP;
 
             $updated = file_get_contents($path);
             $this->assertStringContainsString('use Laravel\\Sanctum\\HasApiTokens;', $updated);
-            $this->assertStringContainsString('use HasinHayder\\Tyro\\Concerns\\HasTyroRoles;', $updated);
-            $this->assertStringContainsString('use HasApiTokens, HasTyroRoles;', $updated);
+            $this->assertStringContainsString('use NahidFerdous\\Tyro\\Concerns\\HasGuardianRoles;', $updated);
+            $this->assertStringContainsString('use HasApiTokens, HasGuardianRoles;', $updated);
 
             $this->artisan('tyro:prepare-user-model', ['--path' => $path])
                 ->expectsOutputToContain('already prepared')

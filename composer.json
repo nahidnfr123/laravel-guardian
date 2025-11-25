@@ -1,5 +1,5 @@
 {
-    "name": "hasinhayder/tyro",
+    "name": "NahidFerdous/tyro",
     "description": "Tyro - zero-config API boilerplate packaged for Laravel 12 projects",
     "keywords": [
         "laravel",
@@ -23,13 +23,13 @@
     },
     "autoload": {
         "psr-4": {
-            "HasinHayder\\Tyro\\": "src/",
-            "HasinHayder\\Tyro\\Database\\": "database/"
+            "NahidFerdous\\Tyro\\": "src/",
+            "NahidFerdous\\Tyro\\Database\\": "database/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "HasinHayder\\Tyro\\Tests\\": "tests/"
+            "NahidFerdous\\Tyro\\Tests\\": "tests/"
         }
     },
     "scripts": {
@@ -38,7 +38,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "HasinHayder\\Tyro\\Providers\\TyroServiceProvider"
+              "GuardianServiceProvider"
             ]
         }
     },

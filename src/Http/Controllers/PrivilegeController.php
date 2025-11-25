@@ -1,9 +1,9 @@
 <?php
 
-namespace HasinHayder\Tyro\Http\Controllers;
+namespace NahidFerdous\Guardian\Http\Controllers;
 
-use HasinHayder\Tyro\Models\Privilege;
-use HasinHayder\Tyro\Support\TyroCache;
+use NahidFerdous\Guardian\Models\Privilege;
+use NahidFerdous\Guardian\Support\GuardianCache;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Validation\Rule;
@@ -46,7 +46,7 @@ class PrivilegeController extends Controller
         $privilege->save();
 
         if ($dirty) {
-            TyroCache::forgetUsersByPrivilege($privilege);
+            GuardianCache::forgetUsersByPrivilege($privilege);
         }
 
         return $privilege->fresh('roles:id,name,slug');
@@ -54,7 +54,7 @@ class PrivilegeController extends Controller
 
     public function destroy(Privilege $privilege)
     {
-        TyroCache::forgetUsersByPrivilege($privilege);
+        GuardianCache::forgetUsersByPrivilege($privilege);
         $privilege->roles()->detach();
         $privilege->delete();
 

@@ -1,8 +1,8 @@
 <?php
 
-namespace HasinHayder\Tyro\Tests\Fixtures;
+    namespace NahidFerdous\Guardian\Tests\Fixtures;
 
-use HasinHayder\Tyro\Concerns\HasTyroRoles;
+use NahidFerdous\Guardian\Concerns\HasGuardianRoles;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -12,7 +12,7 @@ class User extends Authenticatable
 {
     use HasApiTokens;
     use HasFactory;
-    use HasTyroRoles;
+    use HasGuardianRoles;
     use Notifiable;
 
     protected $fillable = [

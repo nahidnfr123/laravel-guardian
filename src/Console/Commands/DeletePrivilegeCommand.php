@@ -1,8 +1,8 @@
 <?php
 
-namespace HasinHayder\Tyro\Console\Commands;
+namespace NahidFerdous\Guardian\Console\Commands;
 
-use HasinHayder\Tyro\Support\TyroCache;
+use NahidFerdous\Guardian\Support\GuardianCache;
 
 class DeletePrivilegeCommand extends BaseTyroCommand
 {
@@ -39,7 +39,7 @@ class DeletePrivilegeCommand extends BaseTyroCommand
             return self::SUCCESS;
         }
 
-        TyroCache::forgetUsersByPrivilege($privilege);
+        GuardianCache::forgetUsersByPrivilege($privilege);
         $privilege->roles()->detach();
         $privilege->delete();
 

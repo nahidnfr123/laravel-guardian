@@ -1,9 +1,9 @@
 <?php
 
-namespace HasinHayder\Tyro\Console\Commands;
+namespace NahidFerdous\Guardian\Console\Commands;
 
-use HasinHayder\Tyro\Database\Seeders\PrivilegeSeeder;
-use HasinHayder\Tyro\Support\TyroCache;
+use NahidFerdous\Guardian\Database\Seeders\PrivilegeSeeder;
+use NahidFerdous\Guardian\Support\GuardianCache;
 
 class SeedPrivilegesCommand extends BaseTyroCommand {
     protected $signature = 'tyro:seed-privileges {--force : Skip confirmation even though this overwrites privileges and role mappings}';
@@ -21,7 +21,7 @@ class SeedPrivilegesCommand extends BaseTyroCommand {
         $seeder = $this->laravel->make(PrivilegeSeeder::class);
         $seeder->setContainer($this->laravel)->setCommand($this);
         $seeder->run();
-        TyroCache::forgetAllUsersWithRoles();
+        GuardianCache::forgetAllUsersWithRoles();
 
         $this->info('Default Tyro privileges and role mappings have been re-seeded.');
 

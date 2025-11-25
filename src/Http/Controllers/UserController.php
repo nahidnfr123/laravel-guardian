@@ -1,9 +1,9 @@
 <?php
 
-namespace HasinHayder\Tyro\Http\Controllers;
+namespace NahidFerdous\Guardian\Http\Controllers;
 
-use HasinHayder\Tyro\Models\Role;
-use HasinHayder\Tyro\Support\TyroCache;
+use NahidFerdous\Guardian\Models\Role;
+use NahidFerdous\Guardian\Support\GuardianCache;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Hash;
@@ -40,7 +40,7 @@ class UserController extends Controller
 
         $defaultRoleSlug = config('tyro.default_user_role_slug', 'user');
         $user->roles()->attach(Role::where('slug', $defaultRoleSlug)->first());
-        TyroCache::forgetUser($user);
+        GuardianCache::forgetUser($user);
 
         return $user;
     }
@@ -116,7 +116,7 @@ class UserController extends Controller
         }
 
         $user->delete();
-        TyroCache::forgetUser($user);
+        GuardianCache::forgetUser($user);
 
         return response(['error' => 0, 'message' => 'user deleted']);
     }

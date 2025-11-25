@@ -1,8 +1,8 @@
 <?php
 
-namespace HasinHayder\Tyro\Models;
+namespace NahidFerdous\Guardian\Models;
 
-use HasinHayder\Tyro\Support\TyroCache;
+use NahidFerdous\Guardian\Support\GuardianCache;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
@@ -19,11 +19,11 @@ class RolePrivilege extends Pivot
     protected static function booted(): void
     {
         static::saved(function (self $pivot): void {
-            TyroCache::forgetUsersByRoleIds([$pivot->role_id]);
+            GuardianCache::forgetUsersByRoleIds([$pivot->role_id]);
         });
 
         static::deleted(function (self $pivot): void {
-            TyroCache::forgetUsersByRoleIds([$pivot->role_id]);
+            GuardianCache::forgetUsersByRoleIds([$pivot->role_id]);
         });
     }
 

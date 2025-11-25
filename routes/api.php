@@ -1,20 +1,20 @@
 <?php
 
-use HasinHayder\Tyro\Http\Controllers\TyroController;
-use HasinHayder\Tyro\Http\Controllers\PrivilegeController;
-use HasinHayder\Tyro\Http\Controllers\RoleController;
-use HasinHayder\Tyro\Http\Controllers\RolePrivilegeController;
-use HasinHayder\Tyro\Http\Controllers\UserController;
-use HasinHayder\Tyro\Http\Controllers\UserRoleController;
-use HasinHayder\Tyro\Http\Controllers\UserSuspensionController;
+use NahidFerdous\Guardian\Http\Controllers\GuardianController;
+use NahidFerdous\Guardian\Http\Controllers\PrivilegeController;
+use NahidFerdous\Guardian\Http\Controllers\RoleController;
+use NahidFerdous\Guardian\Http\Controllers\RolePrivilegeController;
+use NahidFerdous\Guardian\Http\Controllers\UserController;
+use NahidFerdous\Guardian\Http\Controllers\UserRoleController;
+use NahidFerdous\Guardian\Http\Controllers\UserSuspensionController;
 use Illuminate\Support\Facades\Route;
 
 $guardMiddleware = 'auth:' . config('tyro.guard', 'sanctum');
 $adminAbilities = 'ability:' . implode(',', config('tyro.abilities.admin', ['admin', 'super-admin']));
 $userAbilities = 'ability:' . implode(',', config('tyro.abilities.user_update', ['admin', 'super-admin', 'user']));
 
-Route::get('tyro', [TyroController::class, 'tyro'])->name('tyro.info');
-Route::get('tyro/version', [TyroController::class, 'version'])->name('tyro.version');
+Route::get('tyro', [GuardianController::class, 'tyro'])->name('tyro.info');
+Route::get('tyro/version', [GuardianController::class, 'version'])->name('tyro.version');
 Route::post('login', [UserController::class, 'login'])->name('tyro.login');
 Route::post('users', [UserController::class, 'store'])->name('tyro.users.store');
 

@@ -1,8 +1,8 @@
 <?php
 
-use HasinHayder\Tyro\Models\Privilege;
-use HasinHayder\Tyro\Models\Role;
-use HasinHayder\Tyro\Models\UserRole;
+use NahidFerdous\Guardian\Models\Privilege;
+use NahidFerdous\Guardian\Models\Role;
+use NahidFerdous\Guardian\Models\UserRole;
 
 return [
     'version' => env('TYRO_VERSION', '1.0.1'),

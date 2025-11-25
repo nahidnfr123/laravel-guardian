@@ -1,13 +1,13 @@
 <?php
 
-namespace HasinHayder\Tyro\Http\Middleware;
+namespace NahidFerdous\Guardian\Http\Middleware;
 
 use Closure;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 
-class EnsureAnyTyroRole
+class EnsureGuardianRole
 {
     public function handle(Request $request, Closure $next, string ...$roles)
     {
@@ -25,11 +25,11 @@ class EnsureAnyTyroRole
 
         $ownedRoles = $this->resolveRoleSlugs($request, $user);
 
-        $hasRole = $required->contains(fn ($role) => $this->matchesRole($ownedRoles, $role));
-
-        if (! $hasRole) {
-            // throw new AuthorizationException('Missing the required Tyro roles.');
-            throw new AuthorizationException('ACCESS DENIED.');
+        foreach ($required as $role) {
+            if (! $this->matchesRole($ownedRoles, $role)) {
+                // throw new AuthorizationException('Missing Tyro role: '.$role);
+                throw new AuthorizationException('ACCESS DENIED.');
+            }
         }
 
         return $next($request);

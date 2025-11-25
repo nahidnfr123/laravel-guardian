@@ -1,6 +1,6 @@
 <?php
 
-namespace HasinHayder\Tyro\Database\Seeders;
+namespace NahidFerdous\Guardian\Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;

@@ -1,6 +1,6 @@
 <?php
 
-namespace HasinHayder\Tyro\Console\Commands;
+namespace NahidFerdous\Guardian\Console\Commands;
 
 class PublishConfigCommand extends BaseTyroCommand {
     protected $signature = 'tyro:publish-config {--force : Overwrite the existing config file if it already exists}';
@@ -9,7 +9,7 @@ class PublishConfigCommand extends BaseTyroCommand {
 
     public function handle(): int {
         $options = [
-            '--provider' => 'HasinHayder\\Tyro\\Providers\\TyroServiceProvider',
+            '--provider' => 'NahidFerdous\\Tyro\\Providers\\GuardianServiceProvider',
             '--tag' => 'tyro-config',
         ];
 

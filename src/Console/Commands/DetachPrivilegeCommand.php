@@ -1,8 +1,8 @@
 <?php
 
-namespace HasinHayder\Tyro\Console\Commands;
+namespace NahidFerdous\Guardian\Console\Commands;
 
-use HasinHayder\Tyro\Support\TyroCache;
+use NahidFerdous\Guardian\Support\GuardianCache;
 
 class DetachPrivilegeCommand extends BaseTyroCommand
 {
@@ -42,7 +42,7 @@ class DetachPrivilegeCommand extends BaseTyroCommand
         }
 
         $role->privileges()->detach($privilege);
-        TyroCache::forgetUsersByRole($role);
+        GuardianCache::forgetUsersByRole($role);
 
         $this->info("Privilege [{$privilege->slug}] detached from role [{$role->slug}].");
 
