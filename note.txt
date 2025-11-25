@@ -1,0 +1,7 @@
+composer require nahidferdous/laravel-shield:dev-master
+
+
+composer dump-autoload &&
+composer clear-cache &&
+composer update nahidferdous/shield &&
+php artisan package:discover --ansi

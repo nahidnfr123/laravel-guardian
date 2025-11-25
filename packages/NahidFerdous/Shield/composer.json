@@ -4,6 +4,8 @@
     "keywords": [
         "laravel",
         "sanctum",
+        "passport",
+        "socialite",
         "roles",
         "api"
     ],
@@ -38,7 +40,7 @@
     "extra": {
         "laravel": {
             "providers": [
-              "ShieldServiceProvider"
+                "NahidFerdous\\Shield\\Providers\\ShieldServiceProvider"
             ]
         }
     },
