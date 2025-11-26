@@ -62,7 +62,8 @@ class UserController extends Controller
 
             return response($result, 200);
         } catch (\Exception $e) {
-            $statusCode = $e->getCode() ?: 401;
+            $exceptionCode = $e->getCode();
+            $statusCode = ($exceptionCode >= 100 && $exceptionCode < 600) ? $exceptionCode : 401;
 
             return response([
                 'error' => 1,

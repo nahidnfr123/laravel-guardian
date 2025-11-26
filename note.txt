@@ -27,3 +27,6 @@ php artisan shield:seed
 php artisan shield:prepare-user-model
 
 php artisan shield:seed --force
+
+
+php artisan passport:client --personal
