@@ -2,9 +2,15 @@
 
 namespace NahidFerdous\Shield\Http\Controllers;
 
+use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
 use NahidFerdous\Shield\Http\Requests\ShieldLoginRequest;
+use NahidFerdous\Shield\Mail\VerifyEmailMail;
+use NahidFerdous\Shield\Models\EmailVerificationToken;
 use NahidFerdous\Shield\Services\Auth\AuthServiceFactory;
 
 class AuthController extends Controller
@@ -70,11 +76,138 @@ class AuthController extends Controller
         return response($request->user(), 200);
     }
 
-    public function verifyEmail() {}
+    /**
+     * Verify user email with token
+     */
+    public function verifyEmail(string $token)
+    {
+        $verification = EmailVerificationToken::where('token', $token)
+            ->where('expires_at', '>', now())
+            ->first();
 
-    public function changePassword() {}
+        if (!$verification) {
+            return response([
+                'error' => 1,
+                'message' => 'Invalid or expired verification token'
+            ], 400);
+        }
 
-    public function forgotPassword() {}
+        $userClass = config('shield.models.user');
+        $user = $userClass::find($verification->user_id);
 
-    public function resetPassword() {}
+        if (!$user) {
+            return response([
+                'error' => 1,
+                'message' => 'User not found'
+            ], 404);
+        }
+
+        if ($user->email_verified_at) {
+            $verification->delete();
+            return response([
+                'error' => 0,
+                'message' => 'Email already verified'
+            ], 200);
+        }
+
+        $user->email_verified_at = now();
+        $user->save();
+        $verification->delete();
+
+        return response([
+            'error' => 0,
+            'message' => 'Email verified successfully'
+        ], 200);
+    }
+
+    /**
+     * Send password reset link
+     */
+    public function forgotPassword(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+        ]);
+
+        $status = Password::sendResetLink(
+            $request->only('email')
+        );
+
+        if ($status === Password::RESET_LINK_SENT) {
+            return response([
+                'error' => 0,
+                'message' => 'Password reset link sent to your email'
+            ], 200);
+        }
+
+        return response([
+            'error' => 1,
+            'message' => 'Unable to send reset link'
+        ], 400);
+    }
+
+    /**
+     * Reset password with token
+     */
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'token' => 'required',
+            'email' => 'required|email',
+            'password' => 'required|min:8|confirmed',
+        ]);
+
+        $status = Password::reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function ($user, $password) {
+                $user->forceFill([
+                    'password' => Hash::make($password)
+                ])->setRememberToken(Str::random(60));
+
+                $user->save();
+
+                event(new PasswordReset($user));
+            }
+        );
+
+        if ($status === Password::PASSWORD_RESET) {
+            return response([
+                'error' => 0,
+                'message' => 'Password reset successfully'
+            ], 200);
+        }
+
+        return response([
+            'error' => 1,
+            'message' => __($status)
+        ], 400);
+    }
+
+    /**
+     * Change password for authenticated user
+     */
+    public function changePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required',
+            'password' => 'required|min:8|confirmed',
+        ]);
+
+        $user = $request->user();
+
+        if (!Hash::check($request->current_password, $user->password)) {
+            return response([
+                'error' => 1,
+                'message' => 'Current password is incorrect'
+            ], 400);
+        }
+
+        $user->password = Hash::make($request->password);
+        $user->save();
+
+        return response([
+            'error' => 0,
+            'message' => 'Password changed successfully'
+        ], 200);
+    }
 }

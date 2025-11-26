@@ -5,18 +5,28 @@ namespace NahidFerdous\Shield\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Laravel\Sanctum\Exceptions\MissingAbilityException;
 use NahidFerdous\Shield\Http\Requests\ShieldCreateUserRequest;
+use NahidFerdous\Shield\Mail\VerifyEmailMail;
+use NahidFerdous\Shield\Models\EmailVerificationToken;
 use NahidFerdous\Shield\Models\Role;
 use NahidFerdous\Shield\Support\ShieldCache;
 
 class UserController extends Controller
 {
+    /**
+     * Get all users
+     */
     public function index()
     {
         return $this->userQuery()->get();
     }
 
+    /**
+     * Create a new user
+     */
     public function store(ShieldCreateUserRequest $request)
     {
         $userClass = $this->userClass();
@@ -43,20 +53,36 @@ class UserController extends Controller
             $userData['password'] = Hash::make($userData['password']);
         }
 
+        // Set email_verified_at to null if email verification is enabled
+        if (config('shield.validation.create_user.check_verified', false)) {
+            $userData['email_verified_at'] = null;
+        }
+
         $user = $userClass::create($userData);
 
         $defaultRoleSlug = config('shield.default_user_role_slug', 'user');
         $user->roles()->attach(Role::where('slug', $defaultRoleSlug)->first());
         ShieldCache::forgetUser($user);
 
-        return $user;
+        // Send verification email if enabled
+        if (config('shield.validation.create_user.send_verification_email', false)) {
+            $this->sendVerificationEmail($user);
+        }
+
+        return response($user, 201);
     }
 
+    /**
+     * Show a specific user
+     */
     public function show($user): \Illuminate\Contracts\Auth\Authenticatable
     {
         return $this->resolveUser($user);
     }
 
+    /**
+     * Update a user
+     */
     public function update(Request $request, $user): \Illuminate\Contracts\Auth\Authenticatable
     {
         $user = $this->resolveUser($user);
@@ -82,6 +108,9 @@ class UserController extends Controller
         throw new MissingAbilityException('Not Authorized');
     }
 
+    /**
+     * Delete a user
+     */
     public function destroy($user)
     {
         $user = $this->resolveUser($user);
@@ -97,14 +126,20 @@ class UserController extends Controller
         $user->delete();
         ShieldCache::forgetUser($user);
 
-        return response(['error' => 0, 'message' => 'user deleted']);
+        return response(['error' => 0, 'message' => 'User deleted successfully']);
     }
 
+    /**
+     * Get the configured user class
+     */
     protected function userClass(): string
     {
         return config('shield.models.user', config('auth.providers.users.model', 'App\\Models\\User'));
     }
 
+    /**
+     * Get a query builder for the user model
+     */
     protected function userQuery()
     {
         $class = $this->userClass();
@@ -112,6 +147,9 @@ class UserController extends Controller
         return $class::query();
     }
 
+    /**
+     * Resolve user from ID or instance
+     */
     protected function resolveUser($user): \Illuminate\Contracts\Auth\Authenticatable
     {
         if ($user instanceof \Illuminate\Contracts\Auth\Authenticatable) {
@@ -119,5 +157,30 @@ class UserController extends Controller
         }
 
         return $this->userQuery()->findOrFail($user);
+    }
+
+    /**
+     * Send verification email to user
+     */
+    protected function sendVerificationEmail($user): void
+    {
+        // Delete any existing tokens for this user
+        EmailVerificationToken::where('user_id', $user->id)->delete();
+
+        // Generate new token
+        $token = Str::random(64);
+        $expiresAt = now()->addHours(24);
+
+        EmailVerificationToken::create([
+            'user_id' => $user->id,
+            'token' => $token,
+            'expires_at' => $expiresAt,
+        ]);
+
+        // Generate verification URL
+        $verificationUrl = url(config('shield.route_prefix') . '/verify-email/' . $token);
+
+        // Send email
+        Mail::to($user->email)->send(new VerifyEmailMail($user, $verificationUrl));
     }
 }

@@ -36,14 +36,14 @@ return [
     'validation' => [
         'create_user' => [
             'request_class' => \NahidFerdous\Shield\Http\Requests\ShieldCreateUserRequest::class,
-            'send_verification_email' => true,
+            'send_verification_email' => env('SHIELD_SEND_VERIFICATION_EMAIL', true),
+            'check_verified' => env('SHIELD_CHECK_EMAIL_VERIFIED', false),
         ],
-        //        'create_user' => \App\Http\Requests\UserRegistrationRequest::class,
         'login' => [
             'request_class' => \NahidFerdous\Shield\Http\Requests\ShieldLoginRequest::class,
             'credential_field' => 'email',
             'verification_field' => 'email_verified_at',
-            'check_verified' => false,
+            'check_verified' => env('SHIELD_CHECK_EMAIL_VERIFIED', false),
         ],
     ],
 
@@ -52,6 +52,13 @@ return [
     'protected_role_slugs' => ['admin', 'super-admin'],
 
     'delete_previous_access_tokens_on_login' => env('DELETE_PREVIOUS_ACCESS_TOKENS_ON_LOGIN', false),
+
+    // Email Templates
+    // Set custom views for emails, or leave null to use default templates
+    'email_templates' => [
+        'verify_email' => env('SHIELD_VERIFY_EMAIL_TEMPLATE', null), // e.g., 'emails.custom-verify'
+        'reset_password' => env('SHIELD_RESET_PASSWORD_TEMPLATE', null), // e.g., 'emails.custom-reset'
+    ],
 
     // JWT Configuration
     'jwt' => [

@@ -18,7 +18,7 @@ $driver = config('shield.auth_driver', 'sanctum');
 $getAuthMiddleware = match ($driver) {
     // 'sanctum' => 'auth:sanctum',
     'passport' => 'auth:api',
-    'jwt' => 'jwt.auth',
+    'jwt' => 'auth:api',
     default => 'auth:sanctum',
 };
 
@@ -28,8 +28,8 @@ $getAuthMiddleware = match ($driver) {
 $getAbilityMiddleware = match ($driver) {
     // 'sanctum' => 'ability',
     'passport' => 'scopes', // or 'scope'
-    'jwt' => 'jwt.ability', // custom, explained below
-    default => 'ability'
+    'jwt' => 'roles', // custom, explained below
+    default => 'ability' // or 'abilities'
 };
 
 $adminAbilities = $getAbilityMiddleware.':'.implode(',', config('shield.abilities.admin', ['admin', 'super-admin']));
@@ -37,11 +37,17 @@ $userAbilities = $getAbilityMiddleware.':'.implode(',', config('shield.abilities
 
 Route::get('shield', [ShieldController::class, 'shield'])->name('shield.info');
 Route::get('shield/version', [ShieldController::class, 'version'])->name('shield.version');
+
 Route::post('login', [AuthController::class, 'login'])->name('shield.login');
 Route::post('register', [UserController::class, 'store'])->name('shield.users.store');
-Route::get('verify-email/{token}', [AuthController::class, 'verifyEmail'])->name('shield.verify-email');
+
 Route::post('forgot-password', [AuthController::class, 'forgotPassword'])->name('shield.forgot-password');
 Route::post('reset-password', [AuthController::class, 'resetPassword'])->name('shield.reset-password');
+
+// Email verification route (only if check_verified is enabled)
+if (config('shield.validation.create_user.check_verified', false) || config('shield.validation.login.check_verified', false)) {
+    Route::get('verify-email/{token}', [AuthController::class, 'verifyEmail'])->name('shield.verify-email');
+}
 
 // Social authentication routes
 if (config('shield.social.enabled', false)) {

@@ -147,9 +147,6 @@ class ShieldServiceProvider extends ServiceProvider
         $router->aliasMiddleware('role', EnsureShieldRole::class);
         $router->aliasMiddleware('roles', EnsureAnyShieldRole::class);
 
-        // JWT middleware
-        $router->aliasMiddleware('jwt.auth', JWTAuthenticate::class);
-
         $authDriver = config('shield.auth_driver', 'sanctum');
         // Sanctum/Passport ability middleware
         if ($authDriver === 'sanctum') {
@@ -169,8 +166,8 @@ class ShieldServiceProvider extends ServiceProvider
             }
         } elseif ($authDriver === 'jwt') {
             // JWT ability middleware
-            if (! array_key_exists('jwt.ability', $router->getMiddleware())) {
-                //                $router->aliasMiddleware('jwt.ability', \NahidFerdous\Shield\Http\Middleware\JwtAbilityMiddleware::class);
+            if (! array_key_exists('ability', $router->getMiddleware())) {
+                $router->aliasMiddleware('jwt.auth', JWTAuthenticate::class);
             }
         }
     }

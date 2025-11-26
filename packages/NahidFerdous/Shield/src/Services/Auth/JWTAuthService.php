@@ -19,10 +19,6 @@ class JWTAuthService extends AuthService
 
         $this->ttl = (int) config('shield.jwt.ttl', 60);
         $this->refreshTtl = (int) config('shield.jwt.refresh_ttl', 20160);
-
-        // Set TTL for tymon/jwt-auth
-        config(['jwt.ttl' => $this->ttl]);
-        config(['jwt.refresh_ttl' => $this->refreshTtl]);
     }
 
     public function login(array $credentials): array
@@ -30,15 +26,15 @@ class JWTAuthService extends AuthService
         $user = $this->findUserByCredentials($credentials);
 
         if (! $this->validateCredentials($user, $credentials['password'])) {
-            throw new \RuntimeException('Invalid credentials', 401);
+            throw new \Exception('Invalid credentials', 401);
         }
 
         if ($this->userIsSuspended($user)) {
-            throw new \RuntimeException('User is suspended', 423);
+            throw new \Exception('User is suspended', 423);
         }
 
         if (! $this->userIsVerified($user)) {
-            throw new \RuntimeException('Account not verified', 403);
+            throw new \Exception('Account not verified', 403);
         }
 
         $token = $this->generateToken($user);
@@ -74,9 +70,9 @@ class JWTAuthService extends AuthService
                 'expires_in' => $this->ttl * 60,
             ]);
         } catch (TokenExpiredException $e) {
-            throw new \RuntimeException('Token has expired and cannot be refreshed', 401);
+            throw new \Exception('Token has expired and cannot be refreshed', 401);
         } catch (JWTException $e) {
-            throw new \RuntimeException('Could not refresh token', 500);
+            throw new \Exception('Could not refresh token', 500);
         }
     }
 
@@ -86,7 +82,11 @@ class JWTAuthService extends AuthService
             JWTAuth::setToken($token)->authenticate();
 
             return true;
-        } catch (TokenExpiredException|TokenInvalidException|JWTException $e) {
+        } catch (TokenExpiredException $e) {
+            return false;
+        } catch (TokenInvalidException $e) {
+            return false;
+        } catch (JWTException $e) {
             return false;
         }
     }
@@ -105,7 +105,7 @@ class JWTAuthService extends AuthService
 
         // Ensure user implements JWTSubject
         if (! $user instanceof \Tymon\JWTAuth\Contracts\JWTSubject) {
-            throw new \RuntimeException('User model must implement JWTSubject interface');
+            throw new \Exception('User model must implement JWTSubject interface');
         }
 
         return JWTAuth::customClaims($customClaims)->fromUser($user);
@@ -118,12 +118,12 @@ class JWTAuthService extends AuthService
     {
         // Ensure user implements JWTSubject
         if (! $user instanceof \Tymon\JWTAuth\Contracts\JWTSubject) {
-            throw new \RuntimeException('User model must implement JWTSubject interface');
+            throw new \Exception('User model must implement JWTSubject interface');
         }
 
-        // Temporarily set longer TTL for refresh token
+        // Temporarily set longer TTL for refresh token (ensure integer)
         $originalTtl = config('jwt.ttl');
-        config(['jwt.ttl' => $this->refreshTtl]);
+        config(['jwt.ttl' => (int) $this->refreshTtl]);
 
         $customClaims = [
             'type' => 'refresh',
@@ -132,7 +132,7 @@ class JWTAuthService extends AuthService
         $refreshToken = JWTAuth::customClaims($customClaims)->fromUser($user);
 
         // Restore original TTL
-        config(['jwt.ttl' => $originalTtl]);
+        config(['jwt.ttl' => (int) $originalTtl]);
 
         return $refreshToken;
     }
