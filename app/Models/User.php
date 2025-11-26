@@ -10,7 +10,6 @@ use Illuminate\Notifications\Notifiable;
 use NahidFerdous\Shield\Concerns\HasShieldRoles;
 use Laravel\Passport\HasApiTokens;
 
-
 class User extends Authenticatable
 {
     use HasApiTokens, HasShieldRoles;
