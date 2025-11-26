@@ -2,7 +2,7 @@
 
 # Shield Package
 
-**Shield** is the zero-config API boilerplate for Laravel 12. It ships with Sanctum or Passport authentication + social authentication, role/ability management, ready-made routes, seeders, factories, middleware logging, and an extensible configuration layer so any Laravel app can install the same battle-tested API surface in minutes. Inspired by Shield | https://github.com/hasinhayder/shield
+**Shield** is the zero-config API boilerplate for Laravel 12. It ships with Sanctum or Passport authentication + social authentication, role/ability management, ready-made routes, seeders, factories, middleware logging, and an extensible configuration layer so any Laravel app can install the same battle-tested API surface in minutes. Inspired by Tyro | https://github.com/hasinhayder/tyro
 
 ## Why Shield?
 

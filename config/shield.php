@@ -36,8 +36,8 @@ return [
     ],
 
     'validation' => [
-        'create_user' => \NahidFerdous\Shield\Http\Requests\ShieldCreateUserRequest::class,
-        // 'create_user' => \App\Http\Requests\UserRegistrationRequest::class,
+//        'create_user' => \NahidFerdous\Shield\Http\Requests\ShieldCreateUserRequest::class,
+        'create_user' => \App\Http\Requests\UserRegistrationRequest::class,
         'login' => [
             'request_class' => \NahidFerdous\Shield\Http\Requests\ShieldLoginRequest::class,
             'credential_field' => 'email',
