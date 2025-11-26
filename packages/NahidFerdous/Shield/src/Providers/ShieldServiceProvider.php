@@ -91,26 +91,28 @@ class ShieldServiceProvider extends ServiceProvider
 
     protected function registerValidations(): void
     {
-        // Bind the CreateUserRequest to the custom class from config
-        $this->app->bind(ShieldCreateUserRequest::class, function ($app) {
-            $customClass = config('shield.validation.create_user');
+        $this->app->when(\NahidFerdous\Shield\Http\Controllers\UserController::class)
+            ->needs(ShieldCreateUserRequest::class)
+            ->give(function () {
+                return app(config('shield.validation.create_user'));
+            });
 
-            if ($customClass && $customClass !== ShieldCreateUserRequest::class) {
-                return $app->make($customClass);
-            }
+        $this->app->when(\NahidFerdous\Shield\Http\Controllers\UserController::class)
+            ->needs(ShieldLoginRequest::class)
+            ->give(function () {
+                return app(config('shield.validation.login.request_class'));
+            });
 
-            return $app->make(ShieldCreateUserRequest::class);
-        });
-
-        $this->app->bind(ShieldLoginRequest::class, function ($app) {
-            $customClass = config('shield.validation.login.request_class');
-
-            if ($customClass && $customClass !== ShieldLoginRequest::class) {
-                return $app->make($customClass);
-            }
-
-            return $app->make(ShieldLoginRequest::class);
-        });
+        //        $customClass = config('shield.validation.create_user');
+        //        // Only bind if the user provided a custom request
+        //        if ($customClass && $customClass !== ShieldCreateUserRequest::class) {
+        //            $this->app->bind(ShieldCreateUserRequest::class, $customClass);
+        //        }
+        //        $loginClass = config('shield.validation.login.request_class');
+        //
+        //        if ($loginClass && $loginClass !== ShieldLoginRequest::class) {
+        //            $this->app->bind(ShieldLoginRequest::class, $loginClass);
+        //        }
     }
 
     protected function registerServices(): void

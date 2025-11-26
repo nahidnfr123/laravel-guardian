@@ -25,8 +25,10 @@ class UserRegistrationRequest extends FormRequest
             'name' => 'required|string|max:255',
             'email' => 'required|email',
             'password' => 'required|min:6|confirmed|regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/',
-            'terms' => 'required',
+            'mobile' => 'nullable|regex:/^\+?[1-9]\d{1,14}$/',
+            'dob' => 'nullable|date',
             'genders' => 'required|in:male,female',
+            'terms' => 'required|boolean|accepted',
         ];
     }
 }
