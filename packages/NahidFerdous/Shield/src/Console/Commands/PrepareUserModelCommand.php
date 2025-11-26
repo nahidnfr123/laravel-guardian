@@ -34,13 +34,13 @@ class PrepareUserModelCommand extends BaseShieldCommand
 
         if ($updated === $original) {
             $this->info('User model already prepared.');
-
-            return self::SUCCESS;
+        } else {
+            file_put_contents($path, $updated);
+            $this->info(sprintf('Updated User model at %s for %s driver.', $path, $driver));
         }
 
-        file_put_contents($path, $updated);
-
-        $this->info(sprintf('Updated User model at %s for %s driver.', $path, $driver));
+        // Update auth.php configuration
+        $this->updateAuthConfig($driver);
 
         return self::SUCCESS;
     }
@@ -241,5 +241,105 @@ class PrepareUserModelCommand extends BaseShieldCommand
             'jwt' => null,
             default => 'HasApiTokens',
         };
+    }
+
+    /**
+     * Update auth.php configuration for the driver
+     */
+    protected function updateAuthConfig(string $driver): void
+    {
+        $authConfigPath = config_path('auth.php');
+
+        if (! file_exists($authConfigPath)) {
+            $this->warn('config/auth.php not found. Please manually configure your auth guard.');
+            $this->showManualAuthConfig($driver);
+
+            return;
+        }
+
+        $contents = file_get_contents($authConfigPath);
+        $original = $contents;
+
+        // Check if 'api' guard exists
+        $guardConfig = $this->getGuardConfigForDriver($driver);
+        if (preg_match("/'api'\s*=>\s*\[/", $contents)) {
+            // Update existing 'api' guard
+            $pattern = "/'api'\s*=>\s*\[[^\]]*\]/s";
+            $updated = preg_replace($pattern, $guardConfig, $contents);
+        } else {
+            // Add 'api' guard after 'web' guard
+            $updated = $this->addApiGuard($contents, $guardConfig);
+        }
+
+        if ($updated && $updated !== $original) {
+            file_put_contents($authConfigPath, $updated);
+            $this->info("✓ Updated config/auth.php 'api' guard for {$driver} driver");
+            $this->newLine();
+        } else {
+            $this->warn('Could not automatically update config/auth.php');
+            $this->showManualAuthConfig($driver);
+        }
+    }
+
+    /**
+     * Add 'api' guard to auth.php after 'web' guard
+     */
+    protected function addApiGuard(string $contents, string $guardConfig): string
+    {
+        // Find the 'web' guard closing bracket
+        if (preg_match("/'web'\s*=>\s*\[[^\]]*\]/s", $contents, $matches, PREG_OFFSET_CAPTURE)) {
+            $webGuardEnd = $matches[0][1] + strlen($matches[0][0]);
+
+            // Determine line ending
+            $lineEnding = str_contains($contents, "\r\n") ? "\r\n" : "\n";
+
+            // Insert the 'api' guard after 'web' guard
+            $insertion = ','.$lineEnding.$lineEnding.'        '.$guardConfig;
+
+            return substr_replace($contents, $insertion, $webGuardEnd, 0);
+        }
+
+        return $contents;
+    }
+
+    /**
+     * Get the guard configuration for the driver
+     */
+    protected function getGuardConfigForDriver(string $driver): string
+    {
+        return match ($driver) {
+            'passport' => "'api' => [
+            'driver' => 'passport',
+            'provider' => 'users',
+            'hash' => false,
+        ]",
+            'sanctum' => "'api' => [
+            'driver' => 'sanctum',
+            'provider' => 'users',
+            'hash' => false,
+        ]",
+            'jwt' => "'api' => [
+            'driver' => 'jwt',
+            'provider' => 'users',
+            'hash' => false,
+        ]",
+            default => "'api' => [
+            'driver' => 'sanctum',
+            'provider' => 'users',
+            'hash' => false,
+        ]",
+        };
+    }
+
+    /**
+     * Show manual configuration instructions
+     */
+    protected function showManualAuthConfig(string $driver): void
+    {
+        $this->newLine();
+        $this->info("Please manually update config/auth.php 'guards' array:");
+        $this->newLine();
+        $this->line($this->getGuardConfigForDriver($driver));
+        $this->newLine();
     }
 }
