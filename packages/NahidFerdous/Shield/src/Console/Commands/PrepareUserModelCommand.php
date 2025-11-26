@@ -6,9 +6,9 @@ use Illuminate\Support\Str;
 
 class PrepareUserModelCommand extends BaseShieldCommand
 {
-    protected $signature = 'shield:prepare-user-model {--path= : Override the location of the User model file}';
+    protected $signature = 'shield:prepare-user-model {--path= : Override the location of the User model file} {--driver= : Override the auth driver (sanctum, passport, jwt)}';
 
-    protected $description = 'Add HasApiTokens and HasShieldRoles traits to the default User model';
+    protected $description = 'Add HasApiTokens and HasShieldRoles traits to the default User model based on auth driver';
 
     public function handle(): int
     {
@@ -20,11 +20,14 @@ class PrepareUserModelCommand extends BaseShieldCommand
             return self::FAILURE;
         }
 
+        // Get auth driver from option or config
+        $driver = $this->option('driver') ?: config('shield.auth_driver', 'sanctum');
+
         $original = file_get_contents($path);
         $updated = $original;
 
-        $updated = $this->ensureImports($updated);
-        $updated = $this->ensureTraitUsage($updated);
+        $updated = $this->ensureImports($updated, $driver);
+        $updated = $this->ensureTraitUsage($updated, $driver);
 
         if ($updated === $original) {
             $this->info('User model already prepared.');
@@ -34,18 +37,27 @@ class PrepareUserModelCommand extends BaseShieldCommand
 
         file_put_contents($path, $updated);
 
-        $this->info(sprintf('Updated User model at %s.', $path));
+        $this->info(sprintf('Updated User model at %s for %s driver.', $path, $driver));
 
         return self::SUCCESS;
     }
 
-    protected function ensureImports(string $contents): string
+    protected function ensureImports(string $contents, string $driver): string
     {
         $imports = [
-            'Laravel\\Sanctum\\HasApiTokens',
             'NahidFerdous\\Shield\\Concerns\\HasShieldRoles',
         ];
 
+        // Add appropriate HasApiTokens based on driver
+        $tokenTrait = $this->getTokenTraitForDriver($driver);
+        if ($tokenTrait) {
+            array_unshift($imports, $tokenTrait);
+        }
+
+        // Remove old/incorrect imports
+        $contents = $this->removeOldImports($contents, $driver);
+
+        // Find missing imports
         $missing = array_filter($imports, fn ($import) => ! Str::contains($contents, "use {$import};"));
 
         if (empty($missing)) {
@@ -60,6 +72,7 @@ class PrepareUserModelCommand extends BaseShieldCommand
         $classPosition = strpos($contents, 'class ');
         $insertionPoint = $namespaceEnd;
 
+        // Find the last use statement
         if (preg_match_all('/\nuse\s+[^;]+;/', $contents, $useMatches, PREG_OFFSET_CAPTURE)) {
             foreach ($useMatches[0] as $match) {
                 $position = $match[1];
@@ -82,10 +95,10 @@ class PrepareUserModelCommand extends BaseShieldCommand
             $insert = $lineEnding.$insert;
         }
 
-        return substr_replace($contents, $insert.$lineEnding, $insertionPoint, 0);
+        return substr_replace($contents, $insert, $insertionPoint, 0);
     }
 
-    protected function ensureTraitUsage(string $contents): string
+    protected function ensureTraitUsage(string $contents, string $driver): string
     {
         if (! preg_match('/class\s+User[^\{]*\{/', $contents, $classMatch, PREG_OFFSET_CAPTURE)) {
             return $contents;
@@ -94,39 +107,103 @@ class PrepareUserModelCommand extends BaseShieldCommand
         $classStart = $classMatch[0][1] + strlen($classMatch[0][0]);
         $classBody = substr($contents, $classStart);
 
-        if (Str::contains($classBody, 'HasApiTokens') && Str::contains($classBody, 'HasShieldRoles')) {
-            if (preg_match('/use\s+[^;]*HasApiTokens[^;]*HasShieldRoles[^;]*;/', $classBody)) {
+        $tokenTraitName = $this->getTokenTraitName($driver);
+
+        // Check if both traits are already present
+        if ($tokenTraitName && Str::contains($classBody, $tokenTraitName) && Str::contains($classBody, 'HasShieldRoles')) {
+            if (preg_match('/use\s+[^;]*'.$tokenTraitName.'[^;]*HasShieldRoles[^;]*;/', $classBody) ||
+                preg_match('/use\s+[^;]*HasShieldRoles[^;]*'.$tokenTraitName.'[^;]*;/', $classBody)) {
+                return $contents;
+            }
+        } elseif (!$tokenTraitName && Str::contains($classBody, 'HasShieldRoles')) {
+            // JWT doesn't need HasApiTokens
+            if (preg_match('/use\s+[^;]*HasShieldRoles[^;]*;/', $classBody)) {
                 return $contents;
             }
         }
 
-        if (preg_match('/use\s+[^;]*HasApiTokens[^;]*;/', $classBody, $match, PREG_OFFSET_CAPTURE)) {
-            $line = $match[0][0];
+        // Remove old trait usage lines
+        $contents = $this->removeOldTraitUsage($contents, $classStart, $driver);
 
-            if (! Str::contains($line, 'HasShieldRoles')) {
-                $replacement = rtrim(substr($line, 0, -1)).', HasShieldRoles;';
-
-                return substr_replace($contents, $replacement, $classStart + $match[0][1], strlen($line));
-            }
-
+        // Re-match class after removal
+        if (! preg_match('/class\s+User[^\{]*\{/', $contents, $classMatch, PREG_OFFSET_CAPTURE)) {
             return $contents;
         }
+        $classStart = $classMatch[0][1] + strlen($classMatch[0][0]);
 
-        if (preg_match('/use\s+[^;]*HasShieldRoles[^;]*;/', $classBody, $match, PREG_OFFSET_CAPTURE)) {
-            $line = $match[0][0];
-
-            if (! Str::contains($line, 'HasApiTokens')) {
-                $replacement = preg_replace('/use\s+/', 'use HasApiTokens, ', rtrim(substr($line, 0, -1)), 1).';';
-
-                return substr_replace($contents, $replacement, $classStart + $match[0][1], strlen($line));
-            }
-
-            return $contents;
-        }
-
+        // Add new trait usage
         $lineEnding = str_contains($contents, "\r\n") ? "\r\n" : "\n";
-        $insertion = $lineEnding.'    use HasApiTokens, HasShieldRoles;'.$lineEnding.$lineEnding;
+
+        if ($tokenTraitName) {
+            $insertion = $lineEnding.'    use '.$tokenTraitName.', HasShieldRoles;'.$lineEnding.$lineEnding;
+        } else {
+            // JWT - only HasShieldRoles
+            $insertion = $lineEnding.'    use HasShieldRoles;'.$lineEnding.$lineEnding;
+        }
 
         return substr_replace($contents, $insertion, $classStart, 0);
+    }
+
+    protected function removeOldImports(string $contents, string $driver): string
+    {
+        $currentTrait = $this->getTokenTraitForDriver($driver);
+        $allTraits = [
+            'Laravel\\Sanctum\\HasApiTokens',
+            'Laravel\\Passport\\HasApiTokens',
+        ];
+
+        // Remove imports for other drivers
+        foreach ($allTraits as $trait) {
+            if ($trait !== $currentTrait) {
+                $contents = preg_replace('/use\s+'.preg_quote($trait, '/').';\s*\n?/', '', $contents);
+            }
+        }
+
+        return $contents;
+    }
+
+    protected function removeOldTraitUsage(string $contents, int $classStart, string $driver): string
+    {
+        $classBody = substr($contents, $classStart);
+
+        // Find all use statements in the class
+        $patterns = [
+            '/\s*use\s+HasApiTokens\s*,\s*HasShieldRoles\s*;/',
+            '/\s*use\s+HasShieldRoles\s*,\s*HasApiTokens\s*;/',
+            '/\s*use\s+HasApiTokens\s*;/',
+            '/\s*use\s+HasShieldRoles\s*;/',
+        ];
+
+        foreach ($patterns as $pattern) {
+            if (preg_match($pattern, $classBody, $match, PREG_OFFSET_CAPTURE)) {
+                $matchStart = $classStart + $match[0][1];
+                $matchLength = strlen($match[0][0]);
+                $contents = substr_replace($contents, '', $matchStart, $matchLength);
+
+                // After removing, we need to re-adjust
+                break;
+            }
+        }
+
+        return $contents;
+    }
+
+    protected function getTokenTraitForDriver(string $driver): ?string
+    {
+        return match ($driver) {
+            'sanctum' => 'Laravel\\Sanctum\\HasApiTokens',
+            'passport' => 'Laravel\\Passport\\HasApiTokens',
+            'jwt' => null, // JWT doesn't need HasApiTokens
+            default => 'Laravel\\Sanctum\\HasApiTokens',
+        };
+    }
+
+    protected function getTokenTraitName(string $driver): ?string
+    {
+        return match ($driver) {
+            'sanctum', 'passport' => 'HasApiTokens',
+            'jwt' => null,
+            default => 'HasApiTokens',
+        };
     }
 }
