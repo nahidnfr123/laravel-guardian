@@ -10,7 +10,6 @@ use NahidFerdous\Shield\Http\Controllers\UserController;
 use NahidFerdous\Shield\Http\Controllers\UserRoleController;
 use NahidFerdous\Shield\Http\Controllers\UserSuspensionController;
 
-$guardMiddleware = 'auth:'.config('shield.guard', 'sanctum');
 $adminAbilities = 'ability:'.implode(',', config('shield.abilities.admin', ['admin', 'super-admin']));
 $userAbilities = 'ability:'.implode(',', config('shield.abilities.user_update', ['admin', 'super-admin', 'user']));
 

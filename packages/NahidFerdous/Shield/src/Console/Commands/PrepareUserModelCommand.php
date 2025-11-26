@@ -26,6 +26,9 @@ class PrepareUserModelCommand extends BaseShieldCommand
         $original = file_get_contents($path);
         $updated = $original;
 
+        // IMPORTANT: Remove old traits BEFORE adding new imports
+        $updated = $this->removeOldTraitUsage($updated, $driver);
+        $updated = $this->removeOldImports($updated, $driver);
         $updated = $this->ensureImports($updated, $driver);
         $updated = $this->ensureTraitUsage($updated, $driver);
 
@@ -53,9 +56,6 @@ class PrepareUserModelCommand extends BaseShieldCommand
         if ($tokenTrait) {
             array_unshift($imports, $tokenTrait);
         }
-
-        // Remove old/incorrect imports
-        $contents = $this->removeOldImports($contents, $driver);
 
         // Find missing imports
         $missing = array_filter($imports, fn ($import) => ! Str::contains($contents, "use {$import};"));
@@ -109,39 +109,43 @@ class PrepareUserModelCommand extends BaseShieldCommand
 
         $tokenTraitName = $this->getTokenTraitName($driver);
 
-        // Check if both traits are already present
-        if ($tokenTraitName && Str::contains($classBody, $tokenTraitName) && Str::contains($classBody, 'HasShieldRoles')) {
-            if (preg_match('/use\s+[^;]*'.$tokenTraitName.'[^;]*HasShieldRoles[^;]*;/', $classBody) ||
-                preg_match('/use\s+[^;]*HasShieldRoles[^;]*'.$tokenTraitName.'[^;]*;/', $classBody)) {
-                return $contents;
-            }
-        } elseif (! $tokenTraitName && Str::contains($classBody, 'HasShieldRoles')) {
-            // JWT doesn't need HasApiTokens
-            if (preg_match('/use\s+[^;]*HasShieldRoles[^;]*;/', $classBody)) {
-                return $contents;
-            }
-        }
-
-        // Remove old trait usage lines
-        $contents = $this->removeOldTraitUsage($contents, $classStart, $driver);
-
-        // Re-match class after removal
-        if (! preg_match('/class\s+User[^\{]*\{/', $contents, $classMatch, PREG_OFFSET_CAPTURE)) {
+        // Check if traits are already correctly present
+        if ($tokenTraitName && $this->hasCorrectTraits($classBody, $tokenTraitName)) {
             return $contents;
         }
-        $classStart = $classMatch[0][1] + strlen($classMatch[0][0]);
+
+        if (! $tokenTraitName && Str::contains($classBody, 'use HasShieldRoles;')) {
+            return $contents;
+        }
 
         // Add new trait usage
         $lineEnding = str_contains($contents, "\r\n") ? "\r\n" : "\n";
 
         if ($tokenTraitName) {
-            $insertion = $lineEnding.'    use '.$tokenTraitName.', HasShieldRoles;'.$lineEnding.$lineEnding;
+            $insertion = $lineEnding.'    use '.$tokenTraitName.', HasShieldRoles;'.$lineEnding;
         } else {
             // JWT - only HasShieldRoles
-            $insertion = $lineEnding.'    use HasShieldRoles;'.$lineEnding.$lineEnding;
+            $insertion = $lineEnding.'    use HasShieldRoles;'.$lineEnding;
         }
 
         return substr_replace($contents, $insertion, $classStart, 0);
+    }
+
+    protected function hasCorrectTraits(string $classBody, string $tokenTraitName): bool
+    {
+        // Check if both traits are present in a single use statement
+        if (preg_match('/use\s+[^;]*'.$tokenTraitName.'[^;]*,\s*HasShieldRoles[^;]*;/', $classBody) ||
+            preg_match('/use\s+[^;]*HasShieldRoles[^;]*,\s*'.$tokenTraitName.'[^;]*;/', $classBody)) {
+            return true;
+        }
+
+        // Check if both traits are present in separate use statements
+        if (preg_match('/use\s+'.$tokenTraitName.'\s*;/', $classBody) &&
+            preg_match('/use\s+HasShieldRoles\s*;/', $classBody)) {
+            return true;
+        }
+
+        return false;
     }
 
     protected function removeOldImports(string $contents, string $driver): string
@@ -162,26 +166,58 @@ class PrepareUserModelCommand extends BaseShieldCommand
         return $contents;
     }
 
-    protected function removeOldTraitUsage(string $contents, int $classStart, string $driver): string
+    protected function removeOldTraitUsage(string $contents, string $driver): string
     {
-        $classBody = substr($contents, $classStart);
+        // Find the class body
+        if (! preg_match('/class\s+User[^\{]*\{/', $contents, $classMatch, PREG_OFFSET_CAPTURE)) {
+            return $contents;
+        }
 
-        // Find all use statements in the class
+        $classStart = $classMatch[0][1] + strlen($classMatch[0][0]);
+
+        // Patterns to match various trait usage formats
         $patterns = [
-            '/\s*use\s+HasApiTokens\s*,\s*HasShieldRoles\s*;/',
-            '/\s*use\s+HasShieldRoles\s*,\s*HasApiTokens\s*;/',
-            '/\s*use\s+HasApiTokens\s*;/',
-            '/\s*use\s+HasShieldRoles\s*;/',
+            // use HasApiTokens, HasShieldRoles;
+            '/(\s*)use\s+HasApiTokens\s*,\s*HasShieldRoles\s*;\s*\n?/',
+            // use HasShieldRoles, HasApiTokens;
+            '/(\s*)use\s+HasShieldRoles\s*,\s*HasApiTokens\s*;\s*\n?/',
+            // use HasApiTokens;
+            '/(\s*)use\s+HasApiTokens\s*;\s*\n?/',
+            // use HasShieldRoles;
+            '/(\s*)use\s+HasShieldRoles\s*;\s*\n?/',
         ];
 
+        $tokenTraitName = $this->getTokenTraitName($driver);
+
+        // Remove all matching patterns within the class body
         foreach ($patterns as $pattern) {
-            if (preg_match($pattern, $classBody, $match, PREG_OFFSET_CAPTURE)) {
+            // Keep removing until no more matches found
+            while (preg_match($pattern, substr($contents, $classStart), $match, PREG_OFFSET_CAPTURE)) {
                 $matchStart = $classStart + $match[0][1];
                 $matchLength = strlen($match[0][0]);
-                $contents = substr_replace($contents, '', $matchStart, $matchLength);
 
-                // After removing, we need to re-adjust
-                break;
+                // Only remove if it's not the pattern we want to keep
+                $shouldRemove = true;
+
+                if ($tokenTraitName === 'HasApiTokens') {
+                    // For Sanctum/Passport, remove individual uses but we'll add them back combined
+                    $shouldRemove = true;
+                } elseif ($tokenTraitName === null) {
+                    // For JWT, remove HasApiTokens but keep checking for HasShieldRoles
+                    if (str_contains($match[0][0], 'HasApiTokens')) {
+                        $shouldRemove = true;
+                    } elseif (str_contains($match[0][0], 'HasShieldRoles') &&
+                        !str_contains($match[0][0], 'HasApiTokens')) {
+                        // Keep standalone HasShieldRoles for JWT
+                        $shouldRemove = false;
+                    }
+                }
+
+                if ($shouldRemove) {
+                    $contents = substr_replace($contents, '', $matchStart, $matchLength);
+                } else {
+                    break; // Don't remove this one, move to next pattern
+                }
             }
         }
 

@@ -12,8 +12,6 @@ return [
     // Authentication driver: 'sanctum', 'passport', 'jwt'
     'auth_driver' => env('SHIELD_AUTH_DRIVER', 'sanctum'),
 
-    'guard' => env('SHIELD_GUARD', 'sanctum'), // Auth guard to be used
-
     'route_prefix' => env('SHIELD_ROUTE_PREFIX', 'api'),
     'route_name_prefix' => env('SHIELD_ROUTE_NAME_PREFIX', 'shield.'),
     'route_middleware' => ['api'],
