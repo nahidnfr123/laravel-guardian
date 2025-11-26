@@ -2821,7 +2821,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/NahidFerdous/Shield",
-                "reference": "e2a4c7d0e2da655004ad6fe50199cfdd5fd0fc11"
+                "reference": "ac83cbf8c00eea0405f564ee1a9eeff63498f1b0"
             },
             "require": {
                 "firebase/php-jwt": "^6.0",
@@ -2850,7 +2850,8 @@
             "autoload": {
                 "psr-4": {
                     "NahidFerdous\\Shield\\": "src/",
-                    "NahidFerdous\\Shield\\Database\\": "database/"
+                    "NahidFerdous\\Shield\\Database\\": "database/",
+                    "NahidFerdous\\Shield\\Database\\Seeders\\": "database/seeders/"
                 }
             },
             "autoload-dev": {

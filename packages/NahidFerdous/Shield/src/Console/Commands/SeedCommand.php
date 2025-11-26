@@ -2,6 +2,7 @@
 
 namespace NahidFerdous\Shield\Console\Commands;
 
+use Illuminate\Contracts\Container\BindingResolutionException;
 use NahidFerdous\Shield\Database\Seeders\ShieldSeeder;
 use NahidFerdous\Shield\Support\ShieldCache;
 
@@ -11,6 +12,9 @@ class SeedCommand extends BaseShieldCommand
 
     protected $description = 'Run the ShieldSeeder to recreate default roles and the bootstrap admin user';
 
+    /**
+     * @throws BindingResolutionException
+     */
     public function handle(): int
     {
         if (! $this->option('force') && ! $this->confirm('ShieldSeeder truncates your users/roles/privileges tables before seeding. Continue?', false)) {

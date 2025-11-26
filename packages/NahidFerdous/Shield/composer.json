@@ -30,7 +30,8 @@
     "autoload": {
         "psr-4": {
             "NahidFerdous\\Shield\\": "src/",
-            "NahidFerdous\\Shield\\Database\\": "database/"
+            "NahidFerdous\\Shield\\Database\\": "database/",
+            "NahidFerdous\\Shield\\Database\\Seeders\\": "database/seeders/"
         }
     },
     "autoload-dev": {
