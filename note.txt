@@ -12,21 +12,21 @@ php artisan package:discover --ansi
 ----------------------- commands -------------------
 ====================================================
 
-php artisan vendor:publish --tag=tyro-config
-php artisan vendor:publish --tag=tyro-migrations
-php artisan vendor:publish --tag=tyro-database
-php artisan tyro:publish-config --force
-php artisan tyro:publish-migrations --force
+php artisan vendor:publish --tag=shield-config
+php artisan vendor:publish --tag=shield-migrations
+php artisan vendor:publish --tag=shield-database
+php artisan shield:publish-config --force
+php artisan shield:publish-migrations --force
 
 
-php artisan tyro:install
+php artisan shield:install
 
 
 php artisan migrate
 # or, interactively
-php artisan tyro:seed
+php artisan shield:seed
 
 
-php artisan tyro:prepare-user-model
+php artisan shield:prepare-user-model
 
-php artisan tyro:seed --force
+php artisan shield:seed --force
