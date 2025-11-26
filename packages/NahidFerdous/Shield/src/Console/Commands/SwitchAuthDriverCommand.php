@@ -21,8 +21,9 @@ class SwitchAuthDriverCommand extends BaseShieldCommand
     {
         $driver = strtolower($this->argument('driver'));
 
-        if (!in_array($driver, ['sanctum', 'passport', 'jwt'])) {
+        if (! in_array($driver, ['sanctum', 'passport', 'jwt'])) {
             $this->error('Invalid driver. Must be one of: sanctum, passport, jwt');
+
             return self::FAILURE;
         }
 
@@ -30,14 +31,14 @@ class SwitchAuthDriverCommand extends BaseShieldCommand
         $this->newLine();
 
         // Check requirements
-        if (!$this->checkRequirements($driver)) {
+        if (! $this->checkRequirements($driver)) {
             return self::FAILURE;
         }
 
         // Update config file
-        if (!$this->updateConfigFile($driver)) {
+        if (! $this->updateConfigFile($driver)) {
             $this->warn('Could not automatically update config file.');
-            $this->info("Please manually update config/shield.php:");
+            $this->info('Please manually update config/shield.php:');
             $this->line("  'auth_driver' => '{$driver}',");
             $this->newLine();
         }
@@ -60,7 +61,7 @@ class SwitchAuthDriverCommand extends BaseShieldCommand
         $this->showDriverInstructions($driver);
 
         // Clear cache
-        if (!$this->option('no-cache-clear')) {
+        if (! $this->option('no-cache-clear')) {
             $this->info('Clearing cache...');
             Artisan::call('config:clear');
             Artisan::call('cache:clear');
@@ -93,16 +94,16 @@ class SwitchAuthDriverCommand extends BaseShieldCommand
 
         $requirement = $requirements[$driver];
 
-        if (!class_exists($requirement['class'])) {
+        if (! class_exists($requirement['class'])) {
             $this->error("Required package '{$requirement['package']}' is not installed.");
             $this->newLine();
-            $this->info("Install it with:");
+            $this->info('Install it with:');
             $this->line("  composer require {$requirement['package']}");
             $this->newLine();
 
             if ($driver === 'passport') {
-                $this->info("Then run:");
-                $this->line("  php artisan passport:install");
+                $this->info('Then run:');
+                $this->line('  php artisan passport:install');
                 $this->newLine();
             }
 
@@ -116,7 +117,7 @@ class SwitchAuthDriverCommand extends BaseShieldCommand
     {
         $configPath = config_path('shield.php');
 
-        if (!file_exists($configPath)) {
+        if (! file_exists($configPath)) {
             return false;
         }
 
@@ -133,6 +134,7 @@ class SwitchAuthDriverCommand extends BaseShieldCommand
         }
 
         file_put_contents($configPath, $updated);
+
         return true;
     }
 
@@ -140,10 +142,11 @@ class SwitchAuthDriverCommand extends BaseShieldCommand
     {
         $envPath = base_path('.env');
 
-        if (!file_exists($envPath)) {
+        if (! file_exists($envPath)) {
             $this->warn('.env file not found. Please manually set:');
             $this->line("  SHIELD_AUTH_DRIVER={$driver}");
             $this->newLine();
+
             return;
         }
 
@@ -160,7 +163,7 @@ class SwitchAuthDriverCommand extends BaseShieldCommand
         } else {
             // Add new
             $updated = $contents;
-            if (!str_ends_with($updated, "\n")) {
+            if (! str_ends_with($updated, "\n")) {
                 $updated .= "\n";
             }
             $updated .= "\n# Shield Auth Driver\nSHIELD_AUTH_DRIVER={$driver}\n";
@@ -183,26 +186,26 @@ class SwitchAuthDriverCommand extends BaseShieldCommand
         switch ($driver) {
             case 'sanctum':
                 $this->line("1. Ensure your API routes use 'auth:sanctum' middleware");
-                $this->line("2. Make sure User model uses Laravel\\Sanctum\\HasApiTokens");
-                $this->line("3. Sanctum configuration is in config/sanctum.php");
+                $this->line('2. Make sure User model uses Laravel\\Sanctum\\HasApiTokens');
+                $this->line('3. Sanctum configuration is in config/sanctum.php');
                 break;
 
             case 'passport':
-                $this->line("1. Run: php artisan passport:install (if not done)");
-                $this->line("2. Update your .env with Passport credentials:");
-                $this->line("   PASSPORT_PERSONAL_ACCESS_CLIENT_ID=...");
-                $this->line("   PASSPORT_PERSONAL_ACCESS_CLIENT_SECRET=...");
-                $this->line("3. Make sure User model uses Laravel\\Passport\\HasApiTokens");
+                $this->line('1. Run: php artisan passport:install (if not done)');
+                $this->line('2. Update your .env with Passport credentials:');
+                $this->line('   PASSPORT_PERSONAL_ACCESS_CLIENT_ID=...');
+                $this->line('   PASSPORT_PERSONAL_ACCESS_CLIENT_SECRET=...');
+                $this->line('3. Make sure User model uses Laravel\\Passport\\HasApiTokens');
                 $this->line("4. Ensure your API routes use 'auth:api' middleware");
                 break;
 
             case 'jwt':
-                $this->line("1. Set a secure JWT secret in .env:");
-                $this->line("   JWT_SECRET=".bin2hex(random_bytes(32)));
-                $this->line("2. Configure JWT settings in .env:");
-                $this->line("   JWT_TTL=60 (token lifetime in minutes)");
-                $this->line("   JWT_REFRESH_TTL=20160 (refresh token lifetime)");
-                $this->line("3. User model should only use HasShieldRoles trait");
+                $this->line('1. Set a secure JWT secret in .env:');
+                $this->line('   JWT_SECRET='.bin2hex(random_bytes(32)));
+                $this->line('2. Configure JWT settings in .env:');
+                $this->line('   JWT_TTL=60 (token lifetime in minutes)');
+                $this->line('   JWT_REFRESH_TTL=20160 (refresh token lifetime)');
+                $this->line('3. User model should only use HasShieldRoles trait');
                 $this->line("4. Ensure your API routes use 'jwt.auth' middleware");
                 break;
         }

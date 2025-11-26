@@ -7,15 +7,13 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
 use NahidFerdous\Shield\Concerns\HasShieldRoles;
-
+use Laravel\Passport\HasApiTokens;
 
 
 class User extends Authenticatable
 {
     use HasApiTokens, HasShieldRoles;
-
 
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;

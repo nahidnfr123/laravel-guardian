@@ -115,7 +115,7 @@ class PrepareUserModelCommand extends BaseShieldCommand
                 preg_match('/use\s+[^;]*HasShieldRoles[^;]*'.$tokenTraitName.'[^;]*;/', $classBody)) {
                 return $contents;
             }
-        } elseif (!$tokenTraitName && Str::contains($classBody, 'HasShieldRoles')) {
+        } elseif (! $tokenTraitName && Str::contains($classBody, 'HasShieldRoles')) {
             // JWT doesn't need HasApiTokens
             if (preg_match('/use\s+[^;]*HasShieldRoles[^;]*;/', $classBody)) {
                 return $contents;
