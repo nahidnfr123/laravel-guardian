@@ -207,7 +207,7 @@ class PrepareUserModelCommand extends BaseShieldCommand
                     if (str_contains($match[0][0], 'HasApiTokens')) {
                         $shouldRemove = true;
                     } elseif (str_contains($match[0][0], 'HasShieldRoles') &&
-                        !str_contains($match[0][0], 'HasApiTokens')) {
+                        ! str_contains($match[0][0], 'HasApiTokens')) {
                         // Keep standalone HasShieldRoles for JWT
                         $shouldRemove = false;
                     }
