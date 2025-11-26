@@ -10,7 +10,7 @@ return [
     'disable_commands' => env('SHIELD_DISABLE_COMMANDS', false),
 
     // Authentication driver: 'sanctum', 'passport', 'jwt'
-    'auth_driver' => env('SHIELD_AUTH_DRIVER', 'sanctum'),
+    'auth_driver' => env('SHIELD_AUTH_DRIVER', 'passport'),
 
     'guard' => env('SHIELD_GUARD', 'sanctum'), // Auth guard to be used
 
@@ -36,8 +36,8 @@ return [
     ],
 
     'validation' => [
-//        'create_user' => \NahidFerdous\Shield\Http\Requests\ShieldCreateUserRequest::class,
-        'create_user' => \App\Http\Requests\UserRegistrationRequest::class,
+        'create_user' => \NahidFerdous\Shield\Http\Requests\ShieldCreateUserRequest::class,
+//        'create_user' => \App\Http\Requests\UserRegistrationRequest::class,
         'login' => [
             'request_class' => \NahidFerdous\Shield\Http\Requests\ShieldLoginRequest::class,
             'credential_field' => 'email',

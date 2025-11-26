@@ -2,22 +2,27 @@
 
 namespace NahidFerdous\Shield\Services\Auth;
 
+use Exception;
+
 class SanctumAuthService extends AuthService
 {
+    /**
+     * @throws Exception
+     */
     public function login(array $credentials): array
     {
         $user = $this->findUserByCredentials($credentials);
 
         if (! $this->validateCredentials($user, $credentials['password'])) {
-            throw new \Exception('Invalid credentials', 401);
+            throw new \RuntimeException('Invalid credentials', 401);
         }
 
         if ($this->userIsSuspended($user)) {
-            throw new \Exception('User is suspended', 423);
+            throw new \RuntimeException('User is suspended', 423);
         }
 
         if (! $this->userIsVerified($user)) {
-            throw new \Exception('Account not verified', 403);
+            throw new \RuntimeException('Account not verified', 403);
         }
 
         $this->deletePreviousTokens($user);
