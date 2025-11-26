@@ -9,6 +9,7 @@ use Laravel\Sanctum\Exceptions\MissingAbilityException;
 use NahidFerdous\Shield\Http\Requests\ShieldCreateUserRequest;
 use NahidFerdous\Shield\Http\Requests\ShieldLoginRequest;
 use NahidFerdous\Shield\Models\Role;
+use NahidFerdous\Shield\Services\Auth\AuthServiceFactory;
 use NahidFerdous\Shield\Support\ShieldCache;
 
 class UserController extends Controller
@@ -55,79 +56,48 @@ class UserController extends Controller
 
     public function login(ShieldLoginRequest $request)
     {
-        $data = $request->validated();
-        $userClass = $this->userClass();
+        try {
+            $authService = AuthServiceFactory::make();
+            $result = $authService->login($request->validated());
 
-        // Get the credential field from config
-        $credentialField = config('shield.validation.login.credential_field', 'email');
+            return response($result, 200);
+        } catch (\Exception $e) {
+            $statusCode = $e->getCode() ?: 401;
 
-        // Handle multiple credential fields (e.g., 'email|mobile')
-        if (str_contains($credentialField, '|')) {
-            $fields = explode('|', $credentialField);
-            $user = null;
-
-            // Try each field until we find a match
-            foreach ($fields as $field) {
-                if (isset($data[$field])) {
-                    $user = $userClass::where($field, $data[$field])->first();
-                    if ($user) {
-                        break;
-                    }
-                }
-            }
-
-            // If still no user found, try a generic 'login' field
-            if (! $user && isset($data['login'])) {
-                foreach ($fields as $field) {
-                    $user = $userClass::where($field, $data['login'])->first();
-                    if ($user) {
-                        break;
-                    }
-                }
-            }
-        } else {
-            // Single credential field
-            $loginValue = $data[$credentialField] ?? $data['login'] ?? null;
-
-            if (! $loginValue) {
-                return response(['error' => 1, 'message' => 'invalid credentials'], 401);
-            }
-
-            $user = $userClass::where($credentialField, $loginValue)->first();
+            return response([
+                'error' => 1,
+                'message' => $e->getMessage(),
+            ], $statusCode);
         }
-
-        // Check credentials
-        if (! $user || ! Hash::check($request->password, $user->password)) {
-            return response(['error' => 1, 'message' => 'invalid credentials'], 401);
-        }
-
-        // Check if user is suspended
-        if ($this->userIsSuspended($user)) {
-            return response(['error' => 1, 'message' => 'user is suspended'], 423);
-        }
-
-        // Check if verification is required
-        if (config('shield.validation.login.check_verified', false)) {
-            $verificationField = config('shield.validation.login.verification_field', 'email_verified_at');
-
-            if (! $user->{$verificationField}) {
-                return response(['error' => 1, 'message' => 'account not verified'], 403);
-            }
-        }
-
-        // Delete previous tokens if configured
-        if (config('shield.delete_previous_access_tokens_on_login', false)) {
-            $user->tokens()->delete();
-        }
-
-        // Create token with roles
-        $roles = $user->roles->pluck('slug')->all();
-        $token = $user->createToken('shield-api-token', $roles)->plainTextToken;
-
-        return response(['error' => 0, 'id' => $user->id, 'name' => $user->name, 'token' => $token], 200);
     }
 
-    public function show($user)
+    public function logout(Request $request)
+    {
+        try {
+            $user = $request->user();
+            $authService = AuthServiceFactory::make();
+            $authService->logout($user);
+
+            return response(['error' => 0, 'message' => 'Logged out successfully'], 200);
+        } catch (\Exception $e) {
+            return response(['error' => 1, 'message' => 'Logout failed'], 500);
+        }
+    }
+
+    public function refresh(Request $request)
+    {
+        try {
+            $user = $request->user();
+            $authService = AuthServiceFactory::make();
+            $result = $authService->refresh($user);
+
+            return response($result, 200);
+        } catch (\Exception $e) {
+            return response(['error' => 1, 'message' => 'Token refresh failed'], 401);
+        }
+    }
+
+    public function show($user): \Illuminate\Contracts\Auth\Authenticatable
     {
         return $this->resolveUser($user);
     }
@@ -192,21 +162,12 @@ class UserController extends Controller
         return $class::query();
     }
 
-    protected function resolveUser($user)
+    protected function resolveUser($user): \Illuminate\Contracts\Auth\Authenticatable
     {
         if ($user instanceof \Illuminate\Contracts\Auth\Authenticatable) {
             return $user;
         }
 
         return $this->userQuery()->findOrFail($user);
-    }
-
-    protected function userIsSuspended($user): bool
-    {
-        if (method_exists($user, 'isSuspended')) {
-            return $user->isSuspended();
-        }
-
-        return (bool) ($user->suspended_at ?? false);
     }
 }

@@ -55,11 +55,14 @@ use NahidFerdous\Shield\Http\Middleware\EnsureAnyShieldPrivilege;
 use NahidFerdous\Shield\Http\Middleware\EnsureAnyShieldRole;
 use NahidFerdous\Shield\Http\Middleware\EnsureShieldPrivilege;
 use NahidFerdous\Shield\Http\Middleware\EnsureShieldRole;
+use NahidFerdous\Shield\Http\Middleware\JWTAuthenticate;
 use NahidFerdous\Shield\Http\Middleware\ShieldLog;
 use NahidFerdous\Shield\Http\Requests\ShieldCreateUserRequest;
 use NahidFerdous\Shield\Http\Requests\ShieldLoginRequest;
 use NahidFerdous\Shield\Models\Privilege;
 use NahidFerdous\Shield\Models\Role;
+use NahidFerdous\Shield\Services\Auth\AuthServiceFactory;
+use NahidFerdous\Shield\Services\SocialAuthService;
 
 class ShieldServiceProvider extends ServiceProvider
 {
@@ -67,6 +70,7 @@ class ShieldServiceProvider extends ServiceProvider
     {
         $this->mergeConfigFrom(__DIR__.'/../../config/shield.php', 'shield');
         $this->registerValidations();
+        $this->registerServices();
     }
 
     public function boot(): void
@@ -76,6 +80,7 @@ class ShieldServiceProvider extends ServiceProvider
         $this->registerMiddleware();
         $this->registerBindings();
         $this->registerCommands();
+        $this->registerAuthDriver();
 
         if ($this->app->runningInConsole()) {
             $this->loadMigrationsFrom(__DIR__.'/../../database/migrations');
@@ -89,12 +94,10 @@ class ShieldServiceProvider extends ServiceProvider
         $this->app->bind(ShieldCreateUserRequest::class, function ($app) {
             $customClass = config('shield.validation.create_user');
 
-            // If custom class is set and different from default, use it
             if ($customClass && $customClass !== ShieldCreateUserRequest::class) {
                 return $app->make($customClass);
             }
 
-            // Otherwise use the default
             return $app->make(ShieldCreateUserRequest::class);
         });
 
@@ -106,6 +109,19 @@ class ShieldServiceProvider extends ServiceProvider
             }
 
             return $app->make(ShieldLoginRequest::class);
+        });
+    }
+
+    protected function registerServices(): void
+    {
+        // Register Social Auth Service
+        $this->app->singleton(SocialAuthService::class, function ($app) {
+            return new SocialAuthService;
+        });
+
+        // Register Auth Service Factory
+        $this->app->singleton('shield.auth', function ($app) {
+            return AuthServiceFactory::make();
         });
     }
 
@@ -132,12 +148,18 @@ class ShieldServiceProvider extends ServiceProvider
     {
         /** @var Router $router */
         $router = $this->app['router'];
+
+        // Shield middleware
         $router->aliasMiddleware('shield.log', ShieldLog::class);
         $router->aliasMiddleware('privilege', EnsureShieldPrivilege::class);
         $router->aliasMiddleware('privileges', EnsureAnyShieldPrivilege::class);
         $router->aliasMiddleware('role', EnsureShieldRole::class);
         $router->aliasMiddleware('roles', EnsureAnyShieldRole::class);
 
+        // JWT middleware
+        $router->aliasMiddleware('jwt.auth', JWTAuthenticate::class);
+
+        // Sanctum/Passport ability middleware
         if (! array_key_exists('ability', $router->getMiddleware())) {
             $router->aliasMiddleware('ability', CheckForAnyAbility::class);
         }
@@ -157,6 +179,18 @@ class ShieldServiceProvider extends ServiceProvider
 
             return $userClass::query()->findOrFail($value);
         });
+    }
+
+    protected function registerAuthDriver(): void
+    {
+        $driver = config('shield.auth_driver', 'sanctum');
+
+        // Configure guards based on driver
+        if ($driver === 'jwt') {
+            config(['auth.guards.api.driver' => 'jwt']);
+        } elseif ($driver === 'passport') {
+            config(['auth.guards.api.driver' => 'passport']);
+        }
     }
 
     protected function registerPublishing(): void
