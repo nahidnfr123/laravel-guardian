@@ -618,7 +618,7 @@ class ConsoleCommandTest extends TestCase
     public function test_doc_command_can_print_url(): void
     {
         $this->artisan('shield:doc', ['--no-open' => true])
-            ->expectsOutputToContain('https://github.com/NahidFerdous/shield')
+            ->expectsOutputToContain('https://github.com/nahidnfr123/laravel-shield')
             ->assertExitCode(0);
     }
 

@@ -1,0 +1,47 @@
+<?php
+
+namespace NahidFerdous\Shield\Console\Commands\CRUD_Auth_Commands;
+
+use Laravel\Sanctum\PersonalAccessToken;
+use NahidFerdous\Shield\Console\Commands\BaseShieldCommand;
+
+class MeCommand extends BaseShieldCommand
+{
+    protected $signature = 'shield:me {token?} {--token=}';
+
+    protected $description = 'Inspect which user a given token belongs to';
+
+    public function handle(): int
+    {
+        $tokenInput = $this->argument('token') ?? $this->option('token') ?? $this->ask('Paste the full Sanctum token');
+
+        if (! $tokenInput) {
+            $this->error('A token is required.');
+
+            return self::FAILURE;
+        }
+
+        $token = PersonalAccessToken::findToken($tokenInput);
+
+        if (! $token || ! $token->tokenable) {
+            $this->error('Token not found.');
+
+            return self::FAILURE;
+        }
+
+        $user = $token->tokenable;
+
+        $this->table([
+            'ID', 'Name', 'Email', 'Abilities', 'Token Name', 'Last Used',
+        ], [[
+            $user->id,
+            $user->name,
+            $user->email,
+            implode(', ', $token->abilities ?? []),
+            $token->name,
+            optional($token->last_used_at)->toDateTimeString() ?? 'N/A',
+        ]]);
+
+        return self::SUCCESS;
+    }
+}

@@ -9,7 +9,7 @@ class ShieldController extends Controller
     public function shield()
     {
         return response([
-            'message' => 'Welcome to Shield, the zero config API boilerplate with roles and abilities for Laravel Sanctum. Visit https://github.com/NahidFerdous/shield for documentation.',
+            'message' => 'Welcome to Shield, the zero config API boilerplate with roles and abilities for Laravel Sanctum. Visit https://github.com/nahidnfr123/laravel-shield for documentation.',
         ]);
     }
 

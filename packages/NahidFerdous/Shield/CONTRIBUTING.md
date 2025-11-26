@@ -6,7 +6,7 @@ Thank you for considering contributing to Shield! We appreciate your help in mak
 
 ### Reporting Bugs
 
-Before creating a bug report, please check [existing issues](https://github.com/NahidFerdous/shield/issues) to avoid duplicates.
+Before creating a bug report, please check [existing issues](https://github.com/nahidnfr123/laravel-shield/issues) to avoid duplicates.
 
 When reporting a bug, include:
 
@@ -140,8 +140,8 @@ docs: update installation instructions
 ## Getting Help
 
 -   Check the [README](README.md) for documentation
--   Search [existing issues](https://github.com/NahidFerdous/shield/issues)
--   Open a [discussion](https://github.com/NahidFerdous/shield/discussions)
+-   Search [existing issues](https://github.com/nahidnfr123/laravel-shield/issues)
+-   Open a [discussion](https://github.com/nahidnfr123/laravel-shield/discussions)
 
 ## License
 

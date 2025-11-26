@@ -10,7 +10,7 @@ class StarCommand extends BaseShieldCommand
 
     public function handle(): int
     {
-        $url = 'https://github.com/NahidFerdous/shield';
+        $url = 'https://github.com/nahidnfr123/laravel-shield';
 
         if (! $this->option('no-open') && $this->openUrl($url)) {
             $this->info('Opening the Shield repository in your default browser...');

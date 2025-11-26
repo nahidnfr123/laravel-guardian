@@ -8,7 +8,7 @@ class PostmanCollectionCommand extends BaseShieldCommand
 
     protected $description = 'Open the Shield Postman collection in your browser';
 
-    private const COLLECTION_URL = 'https://github.com/NahidFerdous/shield/blob/main/Shield.postman_collection.json';
+    private const COLLECTION_URL = 'https://github.com/nahidnfr123/shield/blob/main/Shield.postman_collection.json';
 
     public function handle(): int
     {
