@@ -1,7 +1,8 @@
 <?php
 
-namespace NahidFerdous\Shield\Console\Commands;
+namespace NahidFerdous\Shield\Console\Commands\CRUD_Commands;
 
+use NahidFerdous\Shield\Console\Commands\BaseShieldCommand;
 use NahidFerdous\Shield\Support\ShieldCache;
 
 class DeletePrivilegeCommand extends BaseShieldCommand

@@ -1,6 +1,8 @@
 <?php
 
-namespace NahidFerdous\Shield\Console\Commands;
+namespace NahidFerdous\Shield\Console\Commands\CRUD_Commands;
+
+use NahidFerdous\Shield\Console\Commands\BaseShieldCommand;
 
 class VersionCommand extends BaseShieldCommand
 {

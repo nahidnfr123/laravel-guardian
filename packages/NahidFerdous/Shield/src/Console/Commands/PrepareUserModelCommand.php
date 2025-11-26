@@ -124,7 +124,7 @@ class PrepareUserModelCommand extends BaseShieldCommand
             $classDeclaration = $matches[0][0];
             $classStart = $matches[0][1];
 
-            if (isset($matches[2]) && !empty($matches[2][0])) {
+            if (isset($matches[2]) && ! empty($matches[2][0])) {
                 // Already has implements clause, add JWTSubject to it
                 $newDeclaration = str_replace($matches[3][0], ', JWTSubject'.$matches[3][0], $classDeclaration);
             } else {
@@ -165,7 +165,7 @@ class PrepareUserModelCommand extends BaseShieldCommand
         }
 
         // Find the class closing brace
-        if (!preg_match('/class\s+User[^{]*\{/', $contents, $classMatch, PREG_OFFSET_CAPTURE)) {
+        if (! preg_match('/class\s+User[^{]*\{/', $contents, $classMatch, PREG_OFFSET_CAPTURE)) {
             return $contents;
         }
 

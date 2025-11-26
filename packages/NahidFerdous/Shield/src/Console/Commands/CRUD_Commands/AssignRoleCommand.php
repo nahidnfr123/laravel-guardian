@@ -1,14 +1,15 @@
 <?php
 
-namespace NahidFerdous\Shield\Console\Commands;
+namespace NahidFerdous\Shield\Console\Commands\CRUD_Commands;
 
+use NahidFerdous\Shield\Console\Commands\BaseShieldCommand;
 use NahidFerdous\Shield\Support\ShieldCache;
 
-class DeleteUserRoleCommand extends BaseShieldCommand
+class AssignRoleCommand extends BaseShieldCommand
 {
-    protected $signature = 'shield:delete-user-role {--user=} {--role=}';
+    protected $signature = 'shield:assign-role {--user=} {--role=}';
 
-    protected $description = 'Detach a role from a user';
+    protected $description = 'Attach a role to a user';
 
     public function handle(): int
     {
@@ -35,14 +36,10 @@ class DeleteUserRoleCommand extends BaseShieldCommand
             return self::FAILURE;
         }
 
-        $detached = $user->roles()->detach($role);
+        $user->roles()->syncWithoutDetaching($role);
         ShieldCache::forgetUser($user);
 
-        if ($detached) {
-            $this->info(sprintf('Role "%s" removed from %s.', $role->slug, $user->email));
-        } else {
-            $this->warn(sprintf('%s did not have the "%s" role.', $user->email, $role->slug));
-        }
+        $this->info(sprintf('Role "%s" assigned to %s.', $role->slug, $user->email));
 
         return self::SUCCESS;
     }

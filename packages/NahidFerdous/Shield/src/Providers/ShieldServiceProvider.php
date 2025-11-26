@@ -7,25 +7,29 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Sanctum\Http\Middleware\CheckAbilities;
 use Laravel\Sanctum\Http\Middleware\CheckForAnyAbility;
-use NahidFerdous\Shield\Console\Commands\AboutCommand;
 use NahidFerdous\Shield\Console\Commands\AddPrivilegeCommand;
 use NahidFerdous\Shield\Console\Commands\AddRoleCommand;
-use NahidFerdous\Shield\Console\Commands\AssignRoleCommand;
-use NahidFerdous\Shield\Console\Commands\AttachPrivilegeCommand;
-use NahidFerdous\Shield\Console\Commands\CreateUserCommand;
-use NahidFerdous\Shield\Console\Commands\DeletePrivilegeCommand;
-use NahidFerdous\Shield\Console\Commands\DeleteRoleCommand;
-use NahidFerdous\Shield\Console\Commands\DeleteUserCommand;
-use NahidFerdous\Shield\Console\Commands\DeleteUserRoleCommand;
-use NahidFerdous\Shield\Console\Commands\DetachPrivilegeCommand;
 use NahidFerdous\Shield\Console\Commands\DocCommand;
 use NahidFerdous\Shield\Console\Commands\FlushRolesCommand;
 use NahidFerdous\Shield\Console\Commands\InstallCommand;
-use NahidFerdous\Shield\Console\Commands\ListPrivilegesCommand;
-use NahidFerdous\Shield\Console\Commands\ListRolesCommand;
-use NahidFerdous\Shield\Console\Commands\ListRolesWithPrivilegesCommand;
-use NahidFerdous\Shield\Console\Commands\ListUsersCommand;
-use NahidFerdous\Shield\Console\Commands\ListUsersWithRolesCommand;
+use NahidFerdous\Shield\Console\Commands\CRUD_Commands\AboutCommand;
+use NahidFerdous\Shield\Console\Commands\CRUD_Commands\AssignRoleCommand;
+use NahidFerdous\Shield\Console\Commands\CRUD_Commands\AttachPrivilegeCommand;
+use NahidFerdous\Shield\Console\Commands\CRUD_Commands\CreateUserCommand;
+use NahidFerdous\Shield\Console\Commands\CRUD_Commands\DeletePrivilegeCommand;
+use NahidFerdous\Shield\Console\Commands\CRUD_Commands\DeleteRoleCommand;
+use NahidFerdous\Shield\Console\Commands\CRUD_Commands\DeleteUserCommand;
+use NahidFerdous\Shield\Console\Commands\CRUD_Commands\DeleteUserRoleCommand;
+use NahidFerdous\Shield\Console\Commands\CRUD_Commands\DetachPrivilegeCommand;
+use NahidFerdous\Shield\Console\Commands\CRUD_Commands\ListPrivilegesCommand;
+use NahidFerdous\Shield\Console\Commands\CRUD_Commands\ListRolesCommand;
+use NahidFerdous\Shield\Console\Commands\CRUD_Commands\ListRolesWithPrivilegesCommand;
+use NahidFerdous\Shield\Console\Commands\CRUD_Commands\ListUsersCommand;
+use NahidFerdous\Shield\Console\Commands\CRUD_Commands\ListUsersWithRolesCommand;
+use NahidFerdous\Shield\Console\Commands\CRUD_Commands\SuspendedUsersCommand;
+use NahidFerdous\Shield\Console\Commands\CRUD_Commands\SuspendUserCommand;
+use NahidFerdous\Shield\Console\Commands\CRUD_Commands\UnsuspendUserCommand;
+use NahidFerdous\Shield\Console\Commands\CRUD_Commands\VersionCommand;
 use NahidFerdous\Shield\Console\Commands\LoginCommand;
 use NahidFerdous\Shield\Console\Commands\LogoutAllCommand;
 use NahidFerdous\Shield\Console\Commands\LogoutAllUsersCommand;
@@ -42,16 +46,12 @@ use NahidFerdous\Shield\Console\Commands\SeedCommand;
 use NahidFerdous\Shield\Console\Commands\SeedPrivilegesCommand;
 use NahidFerdous\Shield\Console\Commands\SeedRolesCommand;
 use NahidFerdous\Shield\Console\Commands\StarCommand;
-use NahidFerdous\Shield\Console\Commands\SuspendedUsersCommand;
-use NahidFerdous\Shield\Console\Commands\SuspendUserCommand;
 use NahidFerdous\Shield\Console\Commands\SwitchAuthDriverCommand;
-use NahidFerdous\Shield\Console\Commands\UnsuspendUserCommand;
 use NahidFerdous\Shield\Console\Commands\UpdatePrivilegeCommand;
 use NahidFerdous\Shield\Console\Commands\UpdateRoleCommand;
 use NahidFerdous\Shield\Console\Commands\UpdateUserCommand;
 use NahidFerdous\Shield\Console\Commands\UserPrivilegesCommand;
 use NahidFerdous\Shield\Console\Commands\UserRolesCommand;
-use NahidFerdous\Shield\Console\Commands\VersionCommand;
 use NahidFerdous\Shield\Http\Middleware\EnsureAnyShieldPrivilege;
 use NahidFerdous\Shield\Http\Middleware\EnsureAnyShieldRole;
 use NahidFerdous\Shield\Http\Middleware\EnsureShieldPrivilege;
@@ -69,7 +69,7 @@ class ShieldServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->mergeConfigFrom(__DIR__ . '/../../config/shield.php', 'shield');
+        $this->mergeConfigFrom(__DIR__.'/../../config/shield.php', 'shield');
         $this->registerValidations();
         $this->registerServices();
     }
@@ -84,8 +84,8 @@ class ShieldServiceProvider extends ServiceProvider
         $this->registerAuthDriver();
 
         if ($this->app->runningInConsole()) {
-            $this->loadMigrationsFrom(__DIR__ . '/../../database/migrations');
-            $this->loadFactoriesFrom(__DIR__ . '/../../database/factories');
+            $this->loadMigrationsFrom(__DIR__.'/../../database/migrations');
+            $this->loadFactoriesFrom(__DIR__.'/../../database/factories');
         }
     }
 
@@ -122,7 +122,7 @@ class ShieldServiceProvider extends ServiceProvider
             return;
         }
 
-        if (!config('shield.load_default_routes', true)) {
+        if (! config('shield.load_default_routes', true)) {
             return;
         }
 
@@ -131,7 +131,7 @@ class ShieldServiceProvider extends ServiceProvider
             'middleware' => config('shield.route_middleware', ['api']),
             'as' => config('shield.route_name_prefix', 'shield.'),
         ], function (): void {
-            $this->loadRoutesFrom(__DIR__ . '/../../routes/api.php');
+            $this->loadRoutesFrom(__DIR__.'/../../routes/api.php');
         });
     }
 
@@ -153,25 +153,24 @@ class ShieldServiceProvider extends ServiceProvider
         $authDriver = config('shield.auth_driver', 'sanctum');
         // Sanctum/Passport ability middleware
         if ($authDriver === 'sanctum') {
-            if (!array_key_exists('ability', $router->getMiddleware())) {
+            if (! array_key_exists('ability', $router->getMiddleware())) {
                 $router->aliasMiddleware('ability', CheckForAnyAbility::class);
             }
 
-            if (!array_key_exists('abilities', $router->getMiddleware())) {
+            if (! array_key_exists('abilities', $router->getMiddleware())) {
                 $router->aliasMiddleware('abilities', CheckAbilities::class);
             }
         } elseif ($authDriver === 'passport') {
-            if (!array_key_exists('abilities', $router->getMiddleware())) {
+            if (! array_key_exists('abilities', $router->getMiddleware())) {
                 $router->aliasMiddleware('scopes', \Laravel\Passport\Http\Middleware\CheckScopes::class);
             }
-            if (!array_key_exists('ability', $router->getMiddleware())) {
+            if (! array_key_exists('ability', $router->getMiddleware())) {
                 $router->aliasMiddleware('scope', \Laravel\Passport\Http\Middleware\CheckForAnyScope::class);
             }
-        }
-        elseif ($authDriver === 'jwt') {
+        } elseif ($authDriver === 'jwt') {
             // JWT ability middleware
-            if (!array_key_exists('jwt.ability', $router->getMiddleware())) {
-//                $router->aliasMiddleware('jwt.ability', \NahidFerdous\Shield\Http\Middleware\JwtAbilityMiddleware::class);
+            if (! array_key_exists('jwt.ability', $router->getMiddleware())) {
+                //                $router->aliasMiddleware('jwt.ability', \NahidFerdous\Shield\Http\Middleware\JwtAbilityMiddleware::class);
             }
         }
     }
@@ -202,31 +201,31 @@ class ShieldServiceProvider extends ServiceProvider
 
     protected function registerPublishing(): void
     {
-        if (!$this->app->runningInConsole()) {
+        if (! $this->app->runningInConsole()) {
             return;
         }
 
         $this->publishes([
-            __DIR__ . '/../../config/shield.php' => config_path('shield.php'),
+            __DIR__.'/../../config/shield.php' => config_path('shield.php'),
         ], 'shield-config');
 
         $this->publishes([
-            __DIR__ . '/../../database/migrations/' => database_path('migrations'),
+            __DIR__.'/../../database/migrations/' => database_path('migrations'),
         ], 'shield-migrations');
 
         $this->publishes([
-            __DIR__ . '/../../database/seeders/' => database_path('seeders'),
-            __DIR__ . '/../../database/factories/' => database_path('factories'),
+            __DIR__.'/../../database/seeders/' => database_path('seeders'),
+            __DIR__.'/../../database/factories/' => database_path('factories'),
         ], 'shield-database');
 
         $this->publishes([
-            __DIR__ . '/../../resources/' => resource_path('vendor/shield'),
+            __DIR__.'/../../resources/' => resource_path('vendor/shield'),
         ], 'shield-assets');
     }
 
     protected function registerCommands(): void
     {
-        if (!$this->app->runningInConsole() || config('shield.disable_commands', false)) {
+        if (! $this->app->runningInConsole() || config('shield.disable_commands', false)) {
             return;
         }
 

@@ -2,10 +2,10 @@
 
 namespace NahidFerdous\Shield\Services\Auth;
 
-use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Tymon\JWTAuth\Exceptions\TokenExpiredException;
 use Tymon\JWTAuth\Exceptions\TokenInvalidException;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class JWTAuthService extends AuthService
 {
@@ -17,8 +17,8 @@ class JWTAuthService extends AuthService
     {
         parent::__construct();
 
-        $this->ttl = config('shield.jwt.ttl', 60);
-        $this->refreshTtl = config('shield.jwt.refresh_ttl', 20160);
+        $this->ttl = (int) config('shield.jwt.ttl', 60);
+        $this->refreshTtl = (int) config('shield.jwt.refresh_ttl', 20160);
 
         // Set TTL for tymon/jwt-auth
         config(['jwt.ttl' => $this->ttl]);
@@ -30,15 +30,15 @@ class JWTAuthService extends AuthService
         $user = $this->findUserByCredentials($credentials);
 
         if (! $this->validateCredentials($user, $credentials['password'])) {
-            throw new \Exception('Invalid credentials', 401);
+            throw new \RuntimeException('Invalid credentials', 401);
         }
 
         if ($this->userIsSuspended($user)) {
-            throw new \Exception('User is suspended', 423);
+            throw new \RuntimeException('User is suspended', 423);
         }
 
         if (! $this->userIsVerified($user)) {
-            throw new \Exception('Account not verified', 403);
+            throw new \RuntimeException('Account not verified', 403);
         }
 
         $token = $this->generateToken($user);
@@ -55,6 +55,7 @@ class JWTAuthService extends AuthService
         try {
             // Invalidate the token (adds to blacklist)
             JWTAuth::invalidate(JWTAuth::getToken());
+
             return true;
         } catch (JWTException $e) {
             return false;
@@ -73,9 +74,9 @@ class JWTAuthService extends AuthService
                 'expires_in' => $this->ttl * 60,
             ]);
         } catch (TokenExpiredException $e) {
-            throw new \Exception('Token has expired and cannot be refreshed', 401);
+            throw new \RuntimeException('Token has expired and cannot be refreshed', 401);
         } catch (JWTException $e) {
-            throw new \Exception('Could not refresh token', 500);
+            throw new \RuntimeException('Could not refresh token', 500);
         }
     }
 
@@ -83,12 +84,9 @@ class JWTAuthService extends AuthService
     {
         try {
             JWTAuth::setToken($token)->authenticate();
+
             return true;
-        } catch (TokenExpiredException $e) {
-            return false;
-        } catch (TokenInvalidException $e) {
-            return false;
-        } catch (JWTException $e) {
+        } catch (TokenExpiredException|TokenInvalidException|JWTException $e) {
             return false;
         }
     }
@@ -106,8 +104,8 @@ class JWTAuthService extends AuthService
         ];
 
         // Ensure user implements JWTSubject
-        if (!$user instanceof \Tymon\JWTAuth\Contracts\JWTSubject) {
-            throw new \Exception('User model must implement JWTSubject interface');
+        if (! $user instanceof \Tymon\JWTAuth\Contracts\JWTSubject) {
+            throw new \RuntimeException('User model must implement JWTSubject interface');
         }
 
         return JWTAuth::customClaims($customClaims)->fromUser($user);
@@ -119,8 +117,8 @@ class JWTAuthService extends AuthService
     protected function generateRefreshToken($user): string
     {
         // Ensure user implements JWTSubject
-        if (!$user instanceof \Tymon\JWTAuth\Contracts\JWTSubject) {
-            throw new \Exception('User model must implement JWTSubject interface');
+        if (! $user instanceof \Tymon\JWTAuth\Contracts\JWTSubject) {
+            throw new \RuntimeException('User model must implement JWTSubject interface');
         }
 
         // Temporarily set longer TTL for refresh token
@@ -170,6 +168,7 @@ class JWTAuthService extends AuthService
     {
         try {
             JWTAuth::setToken($token)->checkOrFail();
+
             return false;
         } catch (TokenInvalidException $e) {
             return true;

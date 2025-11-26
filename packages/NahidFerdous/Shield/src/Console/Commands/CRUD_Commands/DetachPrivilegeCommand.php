@@ -1,15 +1,16 @@
 <?php
 
-namespace NahidFerdous\Shield\Console\Commands;
+namespace NahidFerdous\Shield\Console\Commands\CRUD_Commands;
 
+use NahidFerdous\Shield\Console\Commands\BaseShieldCommand;
 use NahidFerdous\Shield\Support\ShieldCache;
 
-class AttachPrivilegeCommand extends BaseShieldCommand
+class DetachPrivilegeCommand extends BaseShieldCommand
 {
-    protected $signature = 'shield:attach-privilege {privilege? : Privilege ID or slug}
+    protected $signature = 'shield:detach-privilege {privilege? : Privilege ID or slug}
         {role? : Role ID or slug}';
 
-    protected $description = 'Attach a privilege to a Shield role';
+    protected $description = 'Detach a privilege from a Shield role';
 
     public function handle(): int
     {
@@ -17,11 +18,11 @@ class AttachPrivilegeCommand extends BaseShieldCommand
         $roleIdentifier = $this->argument('role');
 
         if (! $privilegeIdentifier) {
-            $privilegeIdentifier = trim((string) $this->ask('Which privilege slug or ID should be attached?')) ?: null;
+            $privilegeIdentifier = trim((string) $this->ask('Which privilege slug or ID should be detached?')) ?: null;
         }
 
         if (! $roleIdentifier) {
-            $roleIdentifier = trim((string) $this->ask('Which role slug or ID should receive the privilege?')) ?: null;
+            $roleIdentifier = trim((string) $this->ask('Which role slug or ID should lose the privilege?')) ?: null;
         }
 
         $privilege = $this->findPrivilege($privilegeIdentifier);
@@ -41,10 +42,10 @@ class AttachPrivilegeCommand extends BaseShieldCommand
             return self::FAILURE;
         }
 
-        $role->privileges()->syncWithoutDetaching($privilege);
+        $role->privileges()->detach($privilege);
         ShieldCache::forgetUsersByRole($role);
 
-        $this->info("Privilege [{$privilege->slug}] attached to role [{$role->slug}].");
+        $this->info("Privilege [{$privilege->slug}] detached from role [{$role->slug}].");
 
         return self::SUCCESS;
     }
