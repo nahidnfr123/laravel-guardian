@@ -178,7 +178,7 @@ class UserController extends Controller
         ]);
 
         // Generate verification URL
-        $verificationUrl = url(config('shield.route_prefix') . '/verify-email/' . $token);
+        $verificationUrl = url(config('shield.route_prefix').'/verify-email/'.$token);
 
         // Send email
         Mail::to($user->email)->send(new VerifyEmailMail($user, $verificationUrl));

@@ -14,7 +14,7 @@ class ResetPasswordNotification extends Notification
         $this->token = $token;
     }
 
-    public function via($notifiable)
+    public function via($notifiable): array
     {
         return ['mail'];
     }
@@ -23,7 +23,7 @@ class ResetPasswordNotification extends Notification
     {
         $customView = config('shield.email_templates.reset_password');
 
-        $resetUrl = url(config('app.url') . '/reset-password?token=' . $this->token . '&email=' . $notifiable->email);
+        $resetUrl = url(config('app.url').'/reset-password?token='.$this->token.'&email='.$notifiable->email);
 
         if ($customView && view()->exists($customView)) {
             return (new MailMessage)
@@ -40,7 +40,7 @@ class ResetPasswordNotification extends Notification
             ->subject('Reset Password Notification')
             ->line('You are receiving this email because we received a password reset request for your account.')
             ->action('Reset Password', $resetUrl)
-            ->line('This password reset link will expire in ' . config('auth.passwords.users.expire') . ' minutes.')
+            ->line('This password reset link will expire in '.config('auth.passwords.users.expire').' minutes.')
             ->line('If you did not request a password reset, no further action is required.');
     }
 }

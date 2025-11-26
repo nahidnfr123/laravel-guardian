@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use NahidFerdous\Shield\Http\Requests\ShieldLoginRequest;
-use NahidFerdous\Shield\Mail\VerifyEmailMail;
 use NahidFerdous\Shield\Models\EmailVerificationToken;
 use NahidFerdous\Shield\Services\Auth\AuthServiceFactory;
 
@@ -85,28 +84,29 @@ class AuthController extends Controller
             ->where('expires_at', '>', now())
             ->first();
 
-        if (!$verification) {
+        if (! $verification) {
             return response([
                 'error' => 1,
-                'message' => 'Invalid or expired verification token'
+                'message' => 'Invalid or expired verification token',
             ], 400);
         }
 
         $userClass = config('shield.models.user');
         $user = $userClass::find($verification->user_id);
 
-        if (!$user) {
+        if (! $user) {
             return response([
                 'error' => 1,
-                'message' => 'User not found'
+                'message' => 'User not found',
             ], 404);
         }
 
         if ($user->email_verified_at) {
             $verification->delete();
+
             return response([
                 'error' => 0,
-                'message' => 'Email already verified'
+                'message' => 'Email already verified',
             ], 200);
         }
 
@@ -116,7 +116,7 @@ class AuthController extends Controller
 
         return response([
             'error' => 0,
-            'message' => 'Email verified successfully'
+            'message' => 'Email verified successfully',
         ], 200);
     }
 
@@ -136,13 +136,13 @@ class AuthController extends Controller
         if ($status === Password::RESET_LINK_SENT) {
             return response([
                 'error' => 0,
-                'message' => 'Password reset link sent to your email'
+                'message' => 'Password reset link sent to your email',
             ], 200);
         }
 
         return response([
             'error' => 1,
-            'message' => 'Unable to send reset link'
+            'message' => 'Unable to send reset link',
         ], 400);
     }
 
@@ -161,7 +161,7 @@ class AuthController extends Controller
             $request->only('email', 'password', 'password_confirmation', 'token'),
             function ($user, $password) {
                 $user->forceFill([
-                    'password' => Hash::make($password)
+                    'password' => Hash::make($password),
                 ])->setRememberToken(Str::random(60));
 
                 $user->save();
@@ -173,13 +173,13 @@ class AuthController extends Controller
         if ($status === Password::PASSWORD_RESET) {
             return response([
                 'error' => 0,
-                'message' => 'Password reset successfully'
+                'message' => 'Password reset successfully',
             ], 200);
         }
 
         return response([
             'error' => 1,
-            'message' => __($status)
+            'message' => __($status),
         ], 400);
     }
 
@@ -195,10 +195,10 @@ class AuthController extends Controller
 
         $user = $request->user();
 
-        if (!Hash::check($request->current_password, $user->password)) {
+        if (! Hash::check($request->current_password, $user->password)) {
             return response([
                 'error' => 1,
-                'message' => 'Current password is incorrect'
+                'message' => 'Current password is incorrect',
             ], 400);
         }
 
@@ -207,7 +207,7 @@ class AuthController extends Controller
 
         return response([
             'error' => 0,
-            'message' => 'Password changed successfully'
+            'message' => 'Password changed successfully',
         ], 200);
     }
 }
