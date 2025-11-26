@@ -1,0 +1,81 @@
+<?php
+
+namespace NahidFerdous\Shield\Console\Commands;
+
+use Illuminate\Support\Facades\Artisan;
+use Symfony\Component\Console\Exception\CommandNotFoundException;
+
+class InstallCommandOld extends BaseShieldCommand
+{
+    protected $signature = 'shield:install
+        {--force : Pass the --force flag to migrate}
+        {--dry-run : Print the steps without executing install:api or migrate}';
+
+    protected $description = 'Run install:api followed by migrate to bootstrap Shield\'s requirements';
+
+    public function handle(): int
+    {
+        if ($this->option('dry-run')) {
+            $this->warn('Dry run: skipped install:api and migrate.');
+
+            return self::SUCCESS;
+        }
+
+        if (! $this->runRequiredCommand('install:api')) {
+            return self::FAILURE;
+        }
+
+        if (! $this->runRequiredCommand('shield:prepare-user-model')) {
+            return self::FAILURE;
+        }
+
+        $arguments = [];
+
+        if ($this->option('force')) {
+            $arguments['--force'] = true;
+        }
+
+        if (! $this->runRequiredCommand('migrate', $arguments)) {
+            return self::FAILURE;
+        }
+
+        if ($this->confirm('Seed Shield roles, privileges, and the bootstrap admin user now?', true)) {
+            if (! $this->runRequiredCommand('shield:seed', ['--force' => true])) {
+                return self::FAILURE;
+            }
+        }
+
+        $this->info('Shield install flow complete.');
+
+        return self::SUCCESS;
+    }
+
+    protected function runRequiredCommand(string $command, array $arguments = []): bool
+    {
+        $this->info(sprintf('Running %s...', $command));
+
+        $arguments = array_merge(['--no-interaction' => true], $arguments);
+
+        try {
+            $exitCode = Artisan::call($command, $arguments);
+        } catch (CommandNotFoundException $e) {
+            $this->error(sprintf('Command "%s" is not available in this application.', $command));
+
+            return false;
+        }
+
+        $capturedOutput = Artisan::output();
+
+        if (trim($capturedOutput) !== '') {
+            $this->line($capturedOutput);
+        }
+
+        if ($exitCode !== 0) {
+            $this->error(sprintf('Command "%s" exited with code %s.', $command, $exitCode));
+
+            return false;
+        }
+
+        return true;
+    }
+}

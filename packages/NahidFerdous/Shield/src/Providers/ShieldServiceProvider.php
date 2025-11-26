@@ -69,7 +69,7 @@ class ShieldServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->mergeConfigFrom(__DIR__ . '/../../config/shield.php', 'shield');
+        $this->mergeConfigFrom(__DIR__.'/../../config/shield.php', 'shield');
         $this->registerValidations();
         $this->registerServices();
     }
@@ -84,8 +84,8 @@ class ShieldServiceProvider extends ServiceProvider
         $this->registerAuthDriver();
 
         if ($this->app->runningInConsole()) {
-            $this->loadMigrationsFrom(__DIR__ . '/../../database/migrations');
-            $this->loadFactoriesFrom(__DIR__ . '/../../database/factories');
+            $this->loadMigrationsFrom(__DIR__.'/../../database/migrations');
+            $this->loadFactoriesFrom(__DIR__.'/../../database/factories');
         }
     }
 
@@ -122,7 +122,7 @@ class ShieldServiceProvider extends ServiceProvider
             return;
         }
 
-        if (!config('shield.load_default_routes', true)) {
+        if (! config('shield.load_default_routes', true)) {
             return;
         }
 
@@ -131,7 +131,7 @@ class ShieldServiceProvider extends ServiceProvider
             'middleware' => config('shield.route_middleware', ['api']),
             'as' => config('shield.route_name_prefix', 'shield.'),
         ], function (): void {
-            $this->loadRoutesFrom(__DIR__ . '/../../routes/api.php');
+            $this->loadRoutesFrom(__DIR__.'/../../routes/api.php');
         });
     }
 
@@ -151,11 +151,11 @@ class ShieldServiceProvider extends ServiceProvider
         $router->aliasMiddleware('jwt.auth', JWTAuthenticate::class);
 
         // Sanctum/Passport ability middleware
-        if (!array_key_exists('ability', $router->getMiddleware())) {
+        if (! array_key_exists('ability', $router->getMiddleware())) {
             $router->aliasMiddleware('ability', CheckForAnyAbility::class);
         }
 
-        if (!array_key_exists('abilities', $router->getMiddleware())) {
+        if (! array_key_exists('abilities', $router->getMiddleware())) {
             $router->aliasMiddleware('abilities', CheckAbilities::class);
         }
     }
@@ -186,31 +186,31 @@ class ShieldServiceProvider extends ServiceProvider
 
     protected function registerPublishing(): void
     {
-        if (!$this->app->runningInConsole()) {
+        if (! $this->app->runningInConsole()) {
             return;
         }
 
         $this->publishes([
-            __DIR__ . '/../../config/shield.php' => config_path('shield.php'),
+            __DIR__.'/../../config/shield.php' => config_path('shield.php'),
         ], 'shield-config');
 
         $this->publishes([
-            __DIR__ . '/../../database/migrations/' => database_path('migrations'),
+            __DIR__.'/../../database/migrations/' => database_path('migrations'),
         ], 'shield-migrations');
 
         $this->publishes([
-            __DIR__ . '/../../database/seeders/' => database_path('seeders'),
-            __DIR__ . '/../../database/factories/' => database_path('factories'),
+            __DIR__.'/../../database/seeders/' => database_path('seeders'),
+            __DIR__.'/../../database/factories/' => database_path('factories'),
         ], 'shield-database');
 
         $this->publishes([
-            __DIR__ . '/../../resources/' => resource_path('vendor/shield'),
+            __DIR__.'/../../resources/' => resource_path('vendor/shield'),
         ], 'shield-assets');
     }
 
     protected function registerCommands(): void
     {
-        if (!$this->app->runningInConsole() || config('shield.disable_commands', false)) {
+        if (! $this->app->runningInConsole() || config('shield.disable_commands', false)) {
             return;
         }
 

@@ -5,9 +5,9 @@ composer dump-autoload && composer clear-cache && composer update nahidferdous/s
 
 
 
-====================================================
------------------------ commands -------------------
-====================================================
+======================================================
+----------------------- commands ---------------------
+======================================================
 
 php artisan vendor:publish --tag=shield-config
 php artisan vendor:publish --tag=shield-migrations
