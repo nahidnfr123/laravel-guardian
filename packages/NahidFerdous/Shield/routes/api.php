@@ -35,8 +35,8 @@ $getAbilityMiddleware = match ($driver) {
 $adminAbilities = $getAbilityMiddleware.':'.implode(',', config('shield.abilities.admin', ['admin', 'super-admin']));
 $userAbilities = $getAbilityMiddleware.':'.implode(',', config('shield.abilities.user_update', ['admin', 'super-admin', 'user']));
 
-// Route::get('shield', [ShieldController::class, 'shield'])->name('shield.info');
-// Route::get('shield/version', [ShieldController::class, 'version'])->name('shield.version');
+Route::get('shield', [ShieldController::class, 'shield'])->name('shield.info');
+Route::get('shield/version', [ShieldController::class, 'version'])->name('shield.version');
 Route::post('login', [AuthController::class, 'login'])->name('shield.login');
 Route::post('register', [UserController::class, 'store'])->name('shield.users.store');
 Route::get('verify-email/{token}', [AuthController::class, 'verifyEmail'])->name('shield.verify-email');
