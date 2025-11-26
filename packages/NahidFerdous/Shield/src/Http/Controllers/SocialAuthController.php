@@ -15,7 +15,7 @@ class SocialAuthController extends Controller
     }
 
     /**
-     * Get list of enabled social providers
+     * Get a list of enabled social providers
      */
     public function providers()
     {

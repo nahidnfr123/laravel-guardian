@@ -2,16 +2,13 @@
 
 namespace NahidFerdous\Shield\Services\Auth;
 
-use Firebase\JWT\JWT;
-use Firebase\JWT\Key;
-use Illuminate\Support\Facades\Cache;
+use Tymon\JWTAuth\Facades\JWTAuth;
+use Tymon\JWTAuth\Exceptions\JWTException;
+use Tymon\JWTAuth\Exceptions\TokenExpiredException;
+use Tymon\JWTAuth\Exceptions\TokenInvalidException;
 
 class JWTAuthService extends AuthService
 {
-    protected $secret;
-
-    protected $algo;
-
     protected $ttl;
 
     protected $refreshTtl;
@@ -20,10 +17,12 @@ class JWTAuthService extends AuthService
     {
         parent::__construct();
 
-        $this->secret = config('shield.jwt.secret') ?: config('app.key');
-        $this->algo = config('shield.jwt.algo', 'HS256');
         $this->ttl = config('shield.jwt.ttl', 60);
         $this->refreshTtl = config('shield.jwt.refresh_ttl', 20160);
+
+        // Set TTL for tymon/jwt-auth
+        config(['jwt.ttl' => $this->ttl]);
+        config(['jwt.refresh_ttl' => $this->refreshTtl]);
     }
 
     public function login(array $credentials): array
@@ -53,40 +52,43 @@ class JWTAuthService extends AuthService
 
     public function logout($user): bool
     {
-        // Blacklist the current token
-        $jti = request()->attributes->get('jwt_id');
-        if ($jti && config('shield.jwt.blacklist_enabled', true)) {
-            $this->blacklistToken($jti);
+        try {
+            // Invalidate the token (adds to blacklist)
+            JWTAuth::invalidate(JWTAuth::getToken());
+            return true;
+        } catch (JWTException $e) {
+            return false;
         }
-
-        return true;
     }
 
     public function refresh($user): array
     {
-        $token = $this->generateToken($user);
-        $refreshToken = $this->generateRefreshToken($user);
+        try {
+            // Refresh the token
+            $token = JWTAuth::refresh(JWTAuth::getToken());
+            $refreshToken = $this->generateRefreshToken($user);
 
-        return $this->successResponse($user, $token, [
-            'refresh_token' => $refreshToken,
-            'expires_in' => $this->ttl * 60,
-        ]);
+            return $this->successResponse($user, $token, [
+                'refresh_token' => $refreshToken,
+                'expires_in' => $this->ttl * 60,
+            ]);
+        } catch (TokenExpiredException $e) {
+            throw new \Exception('Token has expired and cannot be refreshed', 401);
+        } catch (JWTException $e) {
+            throw new \Exception('Could not refresh token', 500);
+        }
     }
 
     public function validate(string $token): bool
     {
         try {
-            $decoded = JWT::decode($token, new Key($this->secret, $this->algo));
-
-            // Check if token is blacklisted
-            if (config('shield.jwt.blacklist_enabled', true)) {
-                if ($this->isBlacklisted($decoded->jti)) {
-                    return false;
-                }
-            }
-
+            JWTAuth::setToken($token)->authenticate();
             return true;
-        } catch (\Exception $e) {
+        } catch (TokenExpiredException $e) {
+            return false;
+        } catch (TokenInvalidException $e) {
+            return false;
+        } catch (JWTException $e) {
             return false;
         }
     }
@@ -96,20 +98,19 @@ class JWTAuthService extends AuthService
      */
     protected function generateToken($user): string
     {
-        $now = time();
-        $payload = [
-            'iss' => config('app.url'),
-            'iat' => $now,
-            'exp' => $now + ($this->ttl * 60),
-            'nbf' => $now,
-            'sub' => $user->id,
-            'jti' => $this->generateJti(),
+        // Add custom claims
+        $customClaims = [
             'roles' => $this->getUserRoles($user),
             'email' => $user->email,
             'name' => $user->name,
         ];
 
-        return JWT::encode($payload, $this->secret, $this->algo);
+        // Ensure user implements JWTSubject
+        if (!$user instanceof \Tymon\JWTAuth\Contracts\JWTSubject) {
+            throw new \Exception('User model must implement JWTSubject interface');
+        }
+
+        return JWTAuth::customClaims($customClaims)->fromUser($user);
     }
 
     /**
@@ -117,44 +118,25 @@ class JWTAuthService extends AuthService
      */
     protected function generateRefreshToken($user): string
     {
-        $now = time();
-        $payload = [
-            'iss' => config('app.url'),
-            'iat' => $now,
-            'exp' => $now + ($this->refreshTtl * 60),
-            'nbf' => $now,
-            'sub' => $user->id,
-            'jti' => $this->generateJti(),
+        // Ensure user implements JWTSubject
+        if (!$user instanceof \Tymon\JWTAuth\Contracts\JWTSubject) {
+            throw new \Exception('User model must implement JWTSubject interface');
+        }
+
+        // Temporarily set longer TTL for refresh token
+        $originalTtl = config('jwt.ttl');
+        config(['jwt.ttl' => $this->refreshTtl]);
+
+        $customClaims = [
             'type' => 'refresh',
         ];
 
-        return JWT::encode($payload, $this->secret, $this->algo);
-    }
+        $refreshToken = JWTAuth::customClaims($customClaims)->fromUser($user);
 
-    /**
-     * Generate unique token ID
-     */
-    protected function generateJti(): string
-    {
-        return bin2hex(random_bytes(16));
-    }
+        // Restore original TTL
+        config(['jwt.ttl' => $originalTtl]);
 
-    /**
-     * Blacklist a token
-     */
-    protected function blacklistToken(string $jti): void
-    {
-        $gracePeriod = config('shield.jwt.blacklist_grace_period', 0);
-        $ttl = $this->ttl + $gracePeriod;
-        Cache::put("jwt_blacklist:{$jti}", true, $ttl * 60);
-    }
-
-    /**
-     * Check if token is blacklisted
-     */
-    protected function isBlacklisted(string $jti): bool
-    {
-        return Cache::has("jwt_blacklist:{$jti}");
+        return $refreshToken;
     }
 
     /**
@@ -163,9 +145,36 @@ class JWTAuthService extends AuthService
     public function decodeToken(string $token)
     {
         try {
-            return JWT::decode($token, new Key($this->secret, $this->algo));
-        } catch (\Exception $e) {
+            return JWTAuth::setToken($token)->getPayload();
+        } catch (JWTException $e) {
             return null;
+        }
+    }
+
+    /**
+     * Get the authenticated user from token
+     */
+    public function getUserFromToken(string $token)
+    {
+        try {
+            return JWTAuth::setToken($token)->authenticate();
+        } catch (JWTException $e) {
+            return null;
+        }
+    }
+
+    /**
+     * Check if token is blacklisted
+     */
+    public function isBlacklisted(string $token): bool
+    {
+        try {
+            JWTAuth::setToken($token)->checkOrFail();
+            return false;
+        } catch (TokenInvalidException $e) {
+            return true;
+        } catch (JWTException $e) {
+            return false;
         }
     }
 

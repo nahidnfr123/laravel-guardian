@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use NahidFerdous\Shield\Http\Controllers\AuthController;
 use NahidFerdous\Shield\Http\Controllers\PrivilegeController;
 use NahidFerdous\Shield\Http\Controllers\RoleController;
 use NahidFerdous\Shield\Http\Controllers\RolePrivilegeController;
@@ -10,13 +11,37 @@ use NahidFerdous\Shield\Http\Controllers\UserController;
 use NahidFerdous\Shield\Http\Controllers\UserRoleController;
 use NahidFerdous\Shield\Http\Controllers\UserSuspensionController;
 
-$adminAbilities = 'ability:'.implode(',', config('shield.abilities.admin', ['admin', 'super-admin']));
-$userAbilities = 'ability:'.implode(',', config('shield.abilities.user_update', ['admin', 'super-admin', 'user']));
+$driver = config('shield.auth_driver', 'sanctum');
+/**
+ * Get authentication middleware based on a configured driver
+ */
+$getAuthMiddleware = match ($driver) {
+    // 'sanctum' => 'auth:sanctum',
+    'passport' => 'auth:api',
+    'jwt' => 'jwt.auth',
+    default => 'auth:sanctum',
+};
 
-Route::get('shield', [ShieldController::class, 'shield'])->name('shield.info');
-Route::get('shield/version', [ShieldController::class, 'version'])->name('shield.version');
-Route::post('login', [UserController::class, 'login'])->name('shield.login');
+/*
+ * Get ability middleware based on a configured driver
+ */
+$getAbilityMiddleware = match ($driver) {
+    // 'sanctum' => 'ability',
+    'passport' => 'scopes', // or 'scope'
+    'jwt' => 'jwt.ability', // custom, explained below
+    default => 'ability'
+};
+
+$adminAbilities = $getAbilityMiddleware.':'.implode(',', config('shield.abilities.admin', ['admin', 'super-admin']));
+$userAbilities = $getAbilityMiddleware.':'.implode(',', config('shield.abilities.user_update', ['admin', 'super-admin', 'user']));
+
+// Route::get('shield', [ShieldController::class, 'shield'])->name('shield.info');
+// Route::get('shield/version', [ShieldController::class, 'version'])->name('shield.version');
+Route::post('login', [AuthController::class, 'login'])->name('shield.login');
 Route::post('register', [UserController::class, 'store'])->name('shield.users.store');
+Route::get('verify-email/{token}', [AuthController::class, 'verifyEmail'])->name('shield.verify-email');
+Route::post('forgot-password', [AuthController::class, 'forgotPassword'])->name('shield.forgot-password');
+Route::post('reset-password', [AuthController::class, 'resetPassword'])->name('shield.reset-password');
 
 // Social authentication routes
 if (config('shield.social.enabled', false)) {
@@ -26,14 +51,12 @@ if (config('shield.social.enabled', false)) {
         Route::get('/{provider}/callback', [SocialAuthController::class, 'callback'])->name('social.callback');
     });
 }
-// Protected routes (authentication required)
-$authMiddleware = getAuthMiddleware();
 
-// Route::middleware([$guardMiddleware])->group(function () use ($adminAbilities, $userAbilities) {
-Route::middleware([$authMiddleware])->group(function () use ($adminAbilities, $userAbilities) {
-    Route::get('me', [UserController::class, 'me'])->name('shield.me');
-    Route::post('/logout', [UserController::class, 'logout'])->name('logout');
-    Route::post('/refresh', [UserController::class, 'refresh'])->name('refresh');
+Route::middleware([$getAuthMiddleware])->group(function () use ($adminAbilities, $userAbilities) {
+    Route::get('me', [AuthController::class, 'me'])->name('shield.me');
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    Route::post('/refresh', [AuthController::class, 'refresh'])->name('refresh');
+    Route::post('/change-password', [AuthController::class, 'changePassword'])->name('change.password');
 
     Route::middleware([$userAbilities])->group(function () {
         Route::match(['put', 'patch', 'post'], 'users/{user}', [UserController::class, 'update'])->name('shield.users.update');
@@ -49,18 +72,3 @@ Route::middleware([$authMiddleware])->group(function () use ($adminAbilities, $u
         Route::apiResource('roles.privileges', RolePrivilegeController::class)->only(['index', 'store', 'destroy']);
     });
 });
-
-/**
- * Get authentication middleware based on configured driver
- */
-function getAuthMiddleware(): string
-{
-    $driver = config('shield.auth_driver', 'sanctum');
-
-    return match ($driver) {
-        'sanctum' => 'auth:sanctum',
-        'passport' => 'auth:api',
-        'jwt' => 'jwt.auth',
-        default => 'auth:sanctum',
-    };
-}

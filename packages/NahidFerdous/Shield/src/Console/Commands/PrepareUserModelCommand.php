@@ -26,11 +26,16 @@ class PrepareUserModelCommand extends BaseShieldCommand
         $original = file_get_contents($path);
         $updated = $original;
 
-        // IMPORTANT: Remove old traits BEFORE adding new imports
+        // IMPORTANT: Remove old traits and interfaces BEFORE adding new ones
         $updated = $this->removeOldTraitUsage($updated, $driver);
         $updated = $this->removeOldImports($updated, $driver);
+        $updated = $this->removeOldInterfaces($updated, $driver);
+        $updated = $this->removeJWTMethods($updated, $driver);
+
         $updated = $this->ensureImports($updated, $driver);
+        $updated = $this->ensureInterfaces($updated, $driver);
         $updated = $this->ensureTraitUsage($updated, $driver);
+        $updated = $this->ensureJWTMethods($updated, $driver);
 
         if ($updated === $original) {
             $this->info('User model already prepared.');
@@ -55,6 +60,11 @@ class PrepareUserModelCommand extends BaseShieldCommand
         $tokenTrait = $this->getTokenTraitForDriver($driver);
         if ($tokenTrait) {
             array_unshift($imports, $tokenTrait);
+        }
+
+        // Add JWT interface for JWT driver
+        if ($driver === 'jwt') {
+            $imports[] = 'Tymon\\JWTAuth\\Contracts\\JWTSubject';
         }
 
         // Find missing imports
@@ -96,6 +106,121 @@ class PrepareUserModelCommand extends BaseShieldCommand
         }
 
         return substr_replace($contents, $insert, $insertionPoint, 0);
+    }
+
+    protected function ensureInterfaces(string $contents, string $driver): string
+    {
+        if ($driver !== 'jwt') {
+            return $contents;
+        }
+
+        // Check if JWTSubject is already implemented
+        if (preg_match('/class\s+User[^{]*implements[^{]*JWTSubject/', $contents)) {
+            return $contents;
+        }
+
+        // Find the class declaration
+        if (preg_match('/(class\s+User[^{]*)(implements\s+[^{]+)?(\{)/', $contents, $matches, PREG_OFFSET_CAPTURE)) {
+            $classDeclaration = $matches[0][0];
+            $classStart = $matches[0][1];
+
+            if (isset($matches[2]) && !empty($matches[2][0])) {
+                // Already has implements clause, add JWTSubject to it
+                $newDeclaration = str_replace($matches[3][0], ', JWTSubject'.$matches[3][0], $classDeclaration);
+            } else {
+                // No implements clause, add it
+                $newDeclaration = str_replace($matches[3][0], ' implements JWTSubject'.$matches[3][0], $classDeclaration);
+            }
+
+            $contents = substr_replace($contents, $newDeclaration, $classStart, strlen($classDeclaration));
+        }
+
+        return $contents;
+    }
+
+    protected function removeOldInterfaces(string $contents, string $driver): string
+    {
+        if ($driver === 'jwt') {
+            return $contents; // Keep JWTSubject for JWT
+        }
+
+        // Remove JWTSubject interface for non-JWT drivers
+        $contents = preg_replace('/,\s*JWTSubject/', '', $contents);
+        $contents = preg_replace('/implements\s+JWTSubject\s*,/', 'implements', $contents);
+        $contents = preg_replace('/implements\s+JWTSubject/', '', $contents);
+
+        return $contents;
+    }
+
+    protected function ensureJWTMethods(string $contents, string $driver): string
+    {
+        if ($driver !== 'jwt') {
+            return $contents;
+        }
+
+        // Check if methods already exist
+        if (str_contains($contents, 'function getJWTIdentifier()') &&
+            str_contains($contents, 'function getJWTCustomClaims()')) {
+            return $contents;
+        }
+
+        // Find the class closing brace
+        if (!preg_match('/class\s+User[^{]*\{/', $contents, $classMatch, PREG_OFFSET_CAPTURE)) {
+            return $contents;
+        }
+
+        // Find the last closing brace (end of class)
+        $lastBrace = strrpos($contents, '}');
+        if ($lastBrace === false) {
+            return $contents;
+        }
+
+        $lineEnding = str_contains($contents, "\r\n") ? "\r\n" : "\n";
+
+        $methods = $lineEnding.'    /**'.$lineEnding;
+        $methods .= '     * Get the identifier that will be stored in the subject claim of the JWT.'.$lineEnding;
+        $methods .= '     *'.$lineEnding;
+        $methods .= '     * @return mixed'.$lineEnding;
+        $methods .= '     */'.$lineEnding;
+        $methods .= '    public function getJWTIdentifier(): mixed'.$lineEnding;
+        $methods .= '    {'.$lineEnding;
+        $methods .= '        return $this->getKey();'.$lineEnding;
+        $methods .= '    }'.$lineEnding;
+        $methods .= $lineEnding;
+        $methods .= '    /**'.$lineEnding;
+        $methods .= '     * Return a key value array, containing any custom claims to be added to the JWT.'.$lineEnding;
+        $methods .= '     *'.$lineEnding;
+        $methods .= '     * @return array'.$lineEnding;
+        $methods .= '     */'.$lineEnding;
+        $methods .= '    public function getJWTCustomClaims(): array'.$lineEnding;
+        $methods .= '    {'.$lineEnding;
+        $methods .= '        return [];'.$lineEnding;
+        $methods .= '    }'.$lineEnding;
+
+        return substr_replace($contents, $methods, $lastBrace, 0);
+    }
+
+    protected function removeJWTMethods(string $contents, string $driver): string
+    {
+        if ($driver === 'jwt') {
+            return $contents; // Keep methods for JWT
+        }
+
+        // Remove getJWTIdentifier method
+        $contents = preg_replace(
+            '/\/\*\*[^}]*?\*\/\s*public\s+function\s+getJWTIdentifier\(\)[^}]*\{[^}]*\}\s*\n?/s',
+            '',
+            $contents
+        );
+
+        // Remove getJWTCustomClaims method
+        $contents = preg_replace(
+            '/\/\*\*[^}]*?\*\/\s*public\s+function\s+getJWTCustomClaims\(\)[^}]*\{[^}]*\}\s*\n?/s',
+            '',
+            $contents
+        );
+
+        return $contents;
     }
 
     protected function ensureTraitUsage(string $contents, string $driver): string
@@ -161,6 +286,11 @@ class PrepareUserModelCommand extends BaseShieldCommand
             if ($trait !== $currentTrait) {
                 $contents = preg_replace('/use\s+'.preg_quote($trait, '/').';\s*\n?/', '', $contents);
             }
+        }
+
+        // Remove JWTSubject import for non-JWT drivers
+        if ($driver !== 'jwt') {
+            $contents = preg_replace('/use\s+Tymon\\\\JWTAuth\\\\Contracts\\\\JWTSubject;\s*\n?/', '', $contents);
         }
 
         return $contents;

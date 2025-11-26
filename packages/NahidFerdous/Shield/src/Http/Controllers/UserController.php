@@ -7,9 +7,7 @@ use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Sanctum\Exceptions\MissingAbilityException;
 use NahidFerdous\Shield\Http\Requests\ShieldCreateUserRequest;
-use NahidFerdous\Shield\Http\Requests\ShieldLoginRequest;
 use NahidFerdous\Shield\Models\Role;
-use NahidFerdous\Shield\Services\Auth\AuthServiceFactory;
 use NahidFerdous\Shield\Support\ShieldCache;
 
 class UserController extends Controller
@@ -54,56 +52,12 @@ class UserController extends Controller
         return $user;
     }
 
-    public function login(ShieldLoginRequest $request)
-    {
-        try {
-            $authService = AuthServiceFactory::make();
-            $result = $authService->login($request->validated());
-
-            return response($result, 200);
-        } catch (\Exception $e) {
-            $exceptionCode = $e->getCode();
-            $statusCode = ($exceptionCode >= 100 && $exceptionCode < 600) ? $exceptionCode : 401;
-
-            return response([
-                'error' => 1,
-                'message' => $e->getMessage(),
-            ], $statusCode);
-        }
-    }
-
-    public function logout(Request $request)
-    {
-        try {
-            $user = $request->user();
-            $authService = AuthServiceFactory::make();
-            $authService->logout($user);
-
-            return response(['error' => 0, 'message' => 'Logged out successfully'], 200);
-        } catch (\Exception $e) {
-            return response(['error' => 1, 'message' => 'Logout failed'], 500);
-        }
-    }
-
-    public function refresh(Request $request)
-    {
-        try {
-            $user = $request->user();
-            $authService = AuthServiceFactory::make();
-            $result = $authService->refresh($user);
-
-            return response($result, 200);
-        } catch (\Exception $e) {
-            return response(['error' => 1, 'message' => 'Token refresh failed'], 401);
-        }
-    }
-
     public function show($user): \Illuminate\Contracts\Auth\Authenticatable
     {
         return $this->resolveUser($user);
     }
 
-    public function update(Request $request, $user)
+    public function update(Request $request, $user): \Illuminate\Contracts\Auth\Authenticatable
     {
         $user = $this->resolveUser($user);
 
@@ -144,11 +98,6 @@ class UserController extends Controller
         ShieldCache::forgetUser($user);
 
         return response(['error' => 0, 'message' => 'user deleted']);
-    }
-
-    public function me(Request $request)
-    {
-        return $request->user();
     }
 
     protected function userClass(): string

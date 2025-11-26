@@ -10,7 +10,7 @@ return [
     'disable_commands' => env('SHIELD_DISABLE_COMMANDS', false),
 
     // Authentication driver: 'sanctum', 'passport', 'jwt'
-    'auth_driver' => env('SHIELD_AUTH_DRIVER', 'passport'),
+    'auth_driver' => env('SHIELD_AUTH_DRIVER', 'jwt'),
 
     'route_prefix' => env('SHIELD_ROUTE_PREFIX', 'api'),
     'route_name_prefix' => env('SHIELD_ROUTE_NAME_PREFIX', 'shield.'),
@@ -34,7 +34,10 @@ return [
     ],
 
     'validation' => [
-        'create_user' => \NahidFerdous\Shield\Http\Requests\ShieldCreateUserRequest::class,
+        'create_user' => [
+            'request_class' => \NahidFerdous\Shield\Http\Requests\ShieldCreateUserRequest::class,
+            'send_verification_email' => true,
+        ],
         //        'create_user' => \App\Http\Requests\UserRegistrationRequest::class,
         'login' => [
             'request_class' => \NahidFerdous\Shield\Http\Requests\ShieldLoginRequest::class,
@@ -53,12 +56,12 @@ return [
     // JWT Configuration
     'jwt' => [
         'secret' => env('JWT_SECRET'),
-        'ttl' => env('JWT_TTL', 60), // minutes
-        'refresh_ttl' => env('JWT_REFRESH_TTL', 20160), // minutes (2 weeks)
+        'ttl' => (int) env('JWT_TTL', 60), // minutes
+        'refresh_ttl' => (int) env('JWT_REFRESH_TTL', 20160), // minutes (2 weeks)
         'algo' => env('JWT_ALGO', 'HS256'),
         'required_claims' => ['iss', 'iat', 'exp', 'nbf', 'sub', 'jti'],
-        'blacklist_enabled' => env('JWT_BLACKLIST_ENABLED', true),
-        'blacklist_grace_period' => env('JWT_BLACKLIST_GRACE_PERIOD', 0),
+        'blacklist_enabled' => (bool) env('JWT_BLACKLIST_ENABLED', true),
+        'blacklist_grace_period' => (int) env('JWT_BLACKLIST_GRACE_PERIOD', 0),
     ],
 
     // Passport Configuration

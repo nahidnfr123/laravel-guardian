@@ -18,7 +18,7 @@ class SwitchAuthDriverCommand extends BaseShieldCommand
     {
         $driver = strtolower($this->argument('driver'));
 
-        if (! in_array($driver, ['sanctum', 'passport', 'jwt'])) {
+        if (!in_array($driver, ['sanctum', 'passport', 'jwt'])) {
             $this->error('Invalid driver. Must be one of: sanctum, passport, jwt');
 
             return self::FAILURE;
@@ -28,12 +28,12 @@ class SwitchAuthDriverCommand extends BaseShieldCommand
         $this->newLine();
 
         // Check requirements
-        if (! $this->checkRequirements($driver)) {
+        if (!$this->checkRequirements($driver)) {
             return self::FAILURE;
         }
 
         // Update config file
-        if (! $this->updateConfigFile($driver)) {
+        if (!$this->updateConfigFile($driver)) {
             $this->warn('Could not automatically update config file.');
             $this->info('Please manually update config/shield.php:');
             $this->line("  'auth_driver' => '{$driver}',");
@@ -60,8 +60,13 @@ class SwitchAuthDriverCommand extends BaseShieldCommand
         // Driver-specific setup instructions
         $this->showDriverInstructions($driver);
 
+        if ($driver === 'jwt') {
+            Artisan::call('vendor:publish', ['--provider' => "Tymon\JWTAuth\Providers\LaravelServiceProvider"]);
+            Artisan::call('jwt:secret');
+        }
+
         // Clear cache
-        if (! $this->option('no-cache-clear')) {
+        if (!$this->option('no-cache-clear')) {
             $this->info('Clearing cache...');
             Artisan::call('config:clear');
             Artisan::call('cache:clear');
@@ -94,7 +99,7 @@ class SwitchAuthDriverCommand extends BaseShieldCommand
 
         $requirement = $requirements[$driver];
 
-        if (! class_exists($requirement['class'])) {
+        if (!class_exists($requirement['class'])) {
             $this->error("Required package '{$requirement['package']}' is not installed.");
             $this->newLine();
             $this->info('Install it with:');
@@ -117,7 +122,7 @@ class SwitchAuthDriverCommand extends BaseShieldCommand
     {
         $configPath = config_path('shield.php');
 
-        if (! file_exists($configPath)) {
+        if (!file_exists($configPath)) {
             return false;
         }
 
@@ -142,7 +147,7 @@ class SwitchAuthDriverCommand extends BaseShieldCommand
     {
         $envPath = base_path('.env');
 
-        if (! file_exists($envPath)) {
+        if (!file_exists($envPath)) {
             $this->warn('.env file not found. Please manually set:');
             $this->line("  SHIELD_AUTH_DRIVER={$driver}");
             $this->newLine();
@@ -163,7 +168,7 @@ class SwitchAuthDriverCommand extends BaseShieldCommand
         } else {
             // Add new
             $updated = $contents;
-            if (! str_ends_with($updated, "\n")) {
+            if (!str_ends_with($updated, "\n")) {
                 $updated .= "\n";
             }
             $updated .= "\n# Shield Auth Driver\nSHIELD_AUTH_DRIVER={$driver}\n";
@@ -188,7 +193,7 @@ class SwitchAuthDriverCommand extends BaseShieldCommand
                 break;
 
             case 'passport':
-                if (! $this->passportKeysExist()) {
+                if (!$this->passportKeysExist()) {
                     $this->error('⚠️  Passport keys not found!');
                     $this->line('1. Run: php artisan passport:install');
                 } else {
@@ -203,7 +208,7 @@ class SwitchAuthDriverCommand extends BaseShieldCommand
 
             case 'jwt':
                 $this->line('1. Set a secure JWT secret in .env:');
-                $this->line('   JWT_SECRET='.bin2hex(random_bytes(32)));
+                $this->line('   JWT_SECRET=' . bin2hex(random_bytes(32)));
                 $this->line('2. Configure JWT settings in .env:');
                 $this->line('   JWT_TTL=60 (token lifetime in minutes)');
                 $this->line('   JWT_REFRESH_TTL=20160 (refresh token lifetime)');
@@ -232,7 +237,7 @@ class SwitchAuthDriverCommand extends BaseShieldCommand
      */
     protected function setupPassport(): void
     {
-        if (! $this->passportKeysExist()) {
+        if (!$this->passportKeysExist()) {
             if ($this->confirm('Passport keys not found. Generate them now?', true)) {
                 $this->info('Running passport:install...');
                 Artisan::call('passport:install', ['--force' => true]);
@@ -256,19 +261,19 @@ class SwitchAuthDriverCommand extends BaseShieldCommand
     {
         $envPath = base_path('.env');
 
-        if (! file_exists($envPath)) {
+        if (!file_exists($envPath)) {
             return;
         }
 
         $contents = file_get_contents($envPath);
 
         // Check if JWT_SECRET exists
-        if (! preg_match('/^JWT_SECRET=/m', $contents)) {
+        if (!preg_match('/^JWT_SECRET=/m', $contents)) {
             if ($this->confirm('JWT_SECRET not found in .env. Generate it now?', true)) {
                 $secret = bin2hex(random_bytes(32));
 
                 $updated = $contents;
-                if (! str_ends_with($updated, "\n")) {
+                if (!str_ends_with($updated, "\n")) {
                     $updated .= "\n";
                 }
                 $updated .= "\n# JWT Configuration\n";
