@@ -3,6 +3,10 @@
 namespace NahidFerdous\Shield\Services\Auth;
 
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
+use NahidFerdous\Shield\Mail\VerifyEmailMail;
+use NahidFerdous\Shield\Models\EmailVerificationToken;
 
 abstract class AuthService
 {
@@ -53,7 +57,7 @@ abstract class AuthService
                 }
             }
 
-            if (! $user && isset($credentials['login'])) {
+            if (!$user && isset($credentials['login'])) {
                 foreach ($fields as $field) {
                     $user = $this->userClass::where($field, $credentials['login'])->first();
                     if ($user) {
@@ -74,7 +78,7 @@ abstract class AuthService
      */
     protected function validateCredentials($user, string $password): bool
     {
-        if (! $user) {
+        if (!$user) {
             return false;
         }
 
@@ -90,7 +94,7 @@ abstract class AuthService
             return $user->isSuspended();
         }
 
-        return (bool) ($user->suspended_at ?? false);
+        return (bool)($user->suspended_at ?? false);
     }
 
     /**
@@ -98,13 +102,13 @@ abstract class AuthService
      */
     protected function userIsVerified($user): bool
     {
-        if (! config('shield.auth.check_verified', false)) {
+        if (!config('shield.auth.check_verified', false)) {
             return true;
         }
 
         $verificationField = config('shield.auth.verification_field', 'email_verified_at');
 
-        return (bool) ($user->{$verificationField} ?? false);
+        return (bool)($user->{$verificationField} ?? false);
     }
 
     /**
@@ -144,4 +148,30 @@ abstract class AuthService
      * Get token type
      */
     abstract protected function getTokenType(): string;
+
+    /**
+     * Send verification email to user
+     */
+    public function sendVerificationEmail($user): void
+    {
+        // Delete any existing tokens for this user
+        EmailVerificationToken::where('user_id', $user->id)->delete();
+
+        // Generate new token
+        $token = Str::random(64);
+        $expiresAt = now()->addHours(config('shield.emails.verify_email.expiration', 24));
+
+        EmailVerificationToken::create([
+            'user_id' => $user->id,
+            'token' => $token,
+            'expires_at' => $expiresAt,
+        ]);
+
+        // Generate verification URL i.e., frontend URL with token as query param
+        $url = (string)config('shield.emails.verify_email.redirect_url', url(config('shield.route_prefix') . '/verify-email'));
+        $redirectUrl = $url . '?token=' . $token;
+
+        // Send email (will be queued by the mailable itself)
+        Mail::to($user->email)->send(new VerifyEmailMail($user, $redirectUrl));
+    }
 }

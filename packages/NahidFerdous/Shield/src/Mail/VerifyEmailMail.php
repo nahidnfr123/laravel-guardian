@@ -32,7 +32,7 @@ class VerifyEmailMail extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Verify Email Mail',
+            subject: 'Verify Email Address',
         );
     }
 

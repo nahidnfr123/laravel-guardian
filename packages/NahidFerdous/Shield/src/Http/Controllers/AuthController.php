@@ -119,7 +119,9 @@ class AuthController extends Controller
         if ($user->email_verified_at) {
             return $this->failure('Email already verified', 400);
         }
-        $user->sendEmailVerificationNotification();
+
+        $authService = AuthServiceFactory::make();
+        $authService->sendVerificationEmail($user);
 
         return $this->success('Verification link sent to your email');
     }

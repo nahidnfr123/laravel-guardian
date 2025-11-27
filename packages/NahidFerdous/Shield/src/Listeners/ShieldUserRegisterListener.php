@@ -9,6 +9,7 @@ use Illuminate\Support\Str;
 use NahidFerdous\Shield\Events\ShieldUserRegisterEvent;
 use NahidFerdous\Shield\Mail\VerifyEmailMail;
 use NahidFerdous\Shield\Models\EmailVerificationToken;
+use NahidFerdous\Shield\Services\Auth\AuthServiceFactory;
 
 class ShieldUserRegisterListener implements ShouldQueue
 {
@@ -37,7 +38,8 @@ class ShieldUserRegisterListener implements ShouldQueue
 
         // Send verification email if enabled
         if (config('shield.auth.create_user.send_verification_email', false)) {
-            $this->sendVerificationEmail($user);
+            $authService = AuthServiceFactory::make();
+            $authService->sendVerificationEmail($user);
         }
 
         // Example: Send welcome email
@@ -48,31 +50,5 @@ class ShieldUserRegisterListener implements ShouldQueue
 
         // Example: Send notification to admins
         // Notification::send(User::admins()->get(), new NewUserRegistered($user));
-    }
-
-    /**
-     * Send verification email to user
-     */
-    protected function sendVerificationEmail($user): void
-    {
-        // Delete any existing tokens for this user
-        EmailVerificationToken::where('user_id', $user->id)->delete();
-
-        // Generate new token
-        $token = Str::random(64);
-        $expiresAt = now()->addHours(config('shield.emails.verify_email.expiration', 24));
-
-        EmailVerificationToken::create([
-            'user_id' => $user->id,
-            'token' => $token,
-            'expires_at' => $expiresAt,
-        ]);
-
-        // Generate verification URL i.e., frontend URL with token as query param
-        $url = (string) config('shield.emails.verify_email.redirect_url', url(config('shield.route_prefix').'/verify-email'));
-        $redirectUrl = $url.'?token='.$token;
-
-        // Send email (will be queued by the mailable itself)
-        Mail::to($user->email)->send(new VerifyEmailMail($user, $redirectUrl));
     }
 }
