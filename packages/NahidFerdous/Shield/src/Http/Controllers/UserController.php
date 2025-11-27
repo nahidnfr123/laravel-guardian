@@ -6,13 +6,9 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Str;
 use Laravel\Sanctum\Exceptions\MissingAbilityException;
 use NahidFerdous\Shield\Events\UserRegistered;
 use NahidFerdous\Shield\Http\Requests\ShieldCreateUserRequest;
-use NahidFerdous\Shield\Mail\VerifyEmailMail;
-use NahidFerdous\Shield\Models\EmailVerificationToken;
 use NahidFerdous\Shield\Models\Role;
 use NahidFerdous\Shield\Support\ShieldCache;
 
@@ -67,7 +63,8 @@ class UserController extends Controller
         ShieldCache::forgetUser($user);
 
         // Fire the UserRegistered event so, package user can listen to the event and perform other actions
-        event(new UserRegistered($user, $request));
+        // Fire the UserRegistered event (handles email verification)
+        event(new UserRegistered($user->id, $request));
 
         // laravel default email verification can be sent using this event
         // (new Registered($user));

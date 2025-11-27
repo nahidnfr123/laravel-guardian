@@ -11,6 +11,7 @@ class UserRegistered
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public $user;
+
     public $request;
 
     /**

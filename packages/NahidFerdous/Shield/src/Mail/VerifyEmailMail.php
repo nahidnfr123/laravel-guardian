@@ -13,10 +13,18 @@ class VerifyEmailMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
+    public $user;
+
+    public $redirectUrl;
+
     /**
      * Create a new message instance.
      */
-    public function __construct(public $user, public $redirectUrl) {}
+    public function __construct($user, $redirectUrl)
+    {
+        $this->user = $user;
+        $this->redirectUrl = $redirectUrl;
+    }
 
     /**
      * Get the message envelope.

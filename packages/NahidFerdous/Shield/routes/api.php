@@ -35,8 +35,8 @@ $adminAbilities = $getAbilityMiddleware.':'.implode(',', config('shield.abilitie
 $userAbilities = $getAbilityMiddleware.':'.implode(',', config('shield.abilities.user_update', ['admin', 'super-admin', 'user']));
 $throttleAttempts = config('shield.auth.throttle_attempts', 6);
 
-Route::get('shield', [ShieldController::class, 'shield'])->name('shield.info');
-Route::get('shield/version', [ShieldController::class, 'version'])->name('shield.version');
+// Route::get('shield', [ShieldController::class, 'shield'])->name('shield.info');
+// Route::get('shield/version', [ShieldController::class, 'version'])->name('shield.version');
 
 // Authentication routes with throttling
 Route::middleware(["throttle:{$throttleAttempts},1"])->group(function () {

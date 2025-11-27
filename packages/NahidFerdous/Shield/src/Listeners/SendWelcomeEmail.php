@@ -52,7 +52,6 @@ class SendWelcomeEmail implements ShouldQueue
         // Notification::send(User::admins()->get(), new NewUserRegistered($user));
     }
 
-
     /**
      * Send verification email to user
      */
@@ -72,8 +71,8 @@ class SendWelcomeEmail implements ShouldQueue
         ]);
 
         // Generate verification URL
-        $url = (string)config('shield.emails.verify_email.redirect_url', url(config('shield.route_prefix') . '/verify-email'));
-        $redirectUrl = $url . '?token=' . $token;
+        $url = (string) config('shield.emails.verify_email.redirect_url', url(config('shield.route_prefix').'/verify-email'));
+        $redirectUrl = $url.'?token='.$token;
 
         // Send email
         Mail::to($user->email)->send(new VerifyEmailMail($user, $redirectUrl));

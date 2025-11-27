@@ -81,12 +81,12 @@ class AuthController extends Controller
     public function verifyEmail(string $token)
     {
         // Verify if the hash is correct
-        if (!hash_equals((string) $token, sha1($user->getEmailForVerification()))) {
+        if (! hash_equals((string) $token, sha1($user->getEmailForVerification()))) {
             return response()->json(['message' => 'Invalid verification link.'], 403);
         }
 
         // Mark email as verified
-        if (!$user->hasVerifiedEmail()) {
+        if (! $user->hasVerifiedEmail()) {
             $user->markEmailAsVerified();
         }
 
@@ -94,7 +94,7 @@ class AuthController extends Controller
             ->where('expires_at', '>', now())
             ->first();
 
-        if (!$verification) {
+        if (! $verification) {
             return response([
                 'error' => 1,
                 'message' => 'Invalid or expired verification token',
@@ -104,7 +104,7 @@ class AuthController extends Controller
         $userClass = config('shield.models.user');
         $user = $userClass::find($verification->user_id);
 
-        if (!$user) {
+        if (! $user) {
             return response([
                 'error' => 1,
                 'message' => 'User not found',
@@ -119,11 +119,11 @@ class AuthController extends Controller
                 'message' => 'Email already verified',
             ], 200);
         }
-        if (!$user->hasVerifiedEmail()) {
+        if (! $user->hasVerifiedEmail()) {
             $user->markEmailAsVerified();
         }
-//        $user->email_verified_at = now();
-//        $user->save();
+        //        $user->email_verified_at = now();
+        //        $user->save();
         $verification->delete();
 
         return response([
@@ -233,7 +233,7 @@ class AuthController extends Controller
 
         $user = $request->user();
 
-        if (!Hash::check($request->current_password, $user->password)) {
+        if (! Hash::check($request->current_password, $user->password)) {
             return response([
                 'error' => 1,
                 'message' => 'Current password is incorrect',
