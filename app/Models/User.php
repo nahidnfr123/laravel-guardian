@@ -8,16 +8,16 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 use NahidFerdous\Shield\Concerns\HasShieldRoles;
 use NahidFerdous\Shield\Notifications\ResetPasswordNotification;
-use Tymon\JWTAuth\Contracts\JWTSubject;
 
-class User extends Authenticatable implements JWTSubject, MustVerifyEmail
+class User extends Authenticatable implements MustVerifyEmail
 {
+    use HasApiTokens, HasShieldRoles;
+
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
-
-    use HasShieldRoles;
 
     /**
      * The attributes that are mass assignable.
@@ -66,21 +66,5 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
     public function sendPasswordResetNotification($token): void
     {
         $this->notify(new ResetPasswordNotification($token));
-    }
-
-    /**
-     * Get the identifier that will be stored in the subject claim of the JWT.
-     */
-    public function getJWTIdentifier(): mixed
-    {
-        return $this->getKey();
-    }
-
-    /**
-     * Return a key value array, containing any custom claims to be added to the JWT.
-     */
-    public function getJWTCustomClaims(): array
-    {
-        return [];
     }
 }

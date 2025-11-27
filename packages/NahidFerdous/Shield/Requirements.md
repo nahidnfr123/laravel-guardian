@@ -1,6 +1,6 @@
 # Auth Requirements
 
-1. Login (sanctum, jwt, passport)
+1. Login (sanctum, jwt, passport) 🥶
 2. Logout 🥶
 3. Register 🥶
 4. Add register even so, package user can listen to event and perform other actions 🥶
