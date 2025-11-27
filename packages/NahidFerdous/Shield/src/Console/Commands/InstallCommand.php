@@ -41,7 +41,8 @@ class InstallCommand extends BaseShieldCommand
             return self::FAILURE;
         }
 
-        if ($this->confirm('Do you want to add and publish the global exception handler?', true)) {
+        // Step 3.6: Publish global exception handler
+        if ($this->confirm('Do you want to add/publish the global exception handler?', true)) {
             if (!$this->runRequiredCommand('shield:publish-exceptions', ['--force' => true])) {
                 return self::FAILURE;
             }
@@ -64,14 +65,14 @@ class InstallCommand extends BaseShieldCommand
             }
         }
 
-        // Step 6: Show completion message
+        // Step 6: Show a completion message
         $this->showCompletionMessage($driver);
 
         return self::SUCCESS;
     }
 
     /**
-     * Choose authentication driver
+     * Choose an authentication driver
      */
     protected function chooseAuthDriver(): string
     {
