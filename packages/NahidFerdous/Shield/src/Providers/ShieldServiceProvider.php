@@ -46,6 +46,7 @@ use NahidFerdous\Shield\Console\Commands\InstallCommand;
 use NahidFerdous\Shield\Console\Commands\PostmanCollectionCommand;
 use NahidFerdous\Shield\Console\Commands\PrepareUserModelCommand;
 use NahidFerdous\Shield\Console\Commands\PublishConfigCommand;
+use NahidFerdous\Shield\Console\Commands\PublishExceptionHandlerCommand;
 use NahidFerdous\Shield\Console\Commands\PublishMigrationsCommand;
 use NahidFerdous\Shield\Console\Commands\SeedCommand;
 use NahidFerdous\Shield\Console\Commands\SeedPrivilegesCommand;
@@ -242,6 +243,7 @@ class ShieldServiceProvider extends ServiceProvider
         }
 
         $this->commands([
+            PublishExceptionHandlerCommand::class,
             AddRoleCommand::class,
             AddPrivilegeCommand::class,
             AboutCommand::class,

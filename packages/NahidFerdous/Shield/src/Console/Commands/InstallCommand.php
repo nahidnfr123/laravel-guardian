@@ -29,12 +29,16 @@ class InstallCommand extends BaseShieldCommand
         $driver = $this->chooseAuthDriver();
 
         // Step 2: Install Laravel Sanctum API
-        if (! $this->runRequiredCommand('install:api')) {
+        if (!$this->runRequiredCommand('install:api')) {
             return self::FAILURE;
         }
 
         // Step 3: Prepare User model for the chosen driver
-        if (! $this->runRequiredCommand('shield:prepare-user-model', ['--driver' => $driver])) {
+        if (!$this->runRequiredCommand('shield:prepare-user-model', ['--driver' => $driver])) {
+            return self::FAILURE;
+        }
+
+        if (!$this->runRequiredCommand('shield:publish-exceptions', ['--force' => true])) {
             return self::FAILURE;
         }
 
@@ -47,13 +51,13 @@ class InstallCommand extends BaseShieldCommand
             $arguments['--force'] = true;
         }
 
-        if (! $this->runRequiredCommand('migrate', $arguments)) {
+        if (!$this->runRequiredCommand('migrate', $arguments)) {
             return self::FAILURE;
         }
 
         // Step 5: Seed Shield data
         if ($this->confirm('Seed Shield roles, privileges, and the bootstrap admin user now?', true)) {
-            if (! $this->runRequiredCommand('shield:seed', ['--force' => true])) {
+            if (!$this->runRequiredCommand('shield:seed', ['--force' => true])) {
                 return self::FAILURE;
             }
         }
@@ -107,7 +111,7 @@ class InstallCommand extends BaseShieldCommand
     {
         $envPath = base_path('.env');
 
-        if (! file_exists($envPath)) {
+        if (!file_exists($envPath)) {
             $this->warn('⚠ .env file not found. Please manually set SHIELD_AUTH_DRIVER');
 
             return;
@@ -126,7 +130,7 @@ class InstallCommand extends BaseShieldCommand
         } else {
             // Add new
             $updated = $contents;
-            if (! str_ends_with($updated, "\n")) {
+            if (!str_ends_with($updated, "\n")) {
                 $updated .= "\n";
             }
             $updated .= "\n# Shield Authentication Driver\nSHIELD_AUTH_DRIVER={$driver}\n";
@@ -183,7 +187,7 @@ class InstallCommand extends BaseShieldCommand
      */
     protected function showDriverInstructions(string $driver): void
     {
-        $this->line('⚙️  <fg=bright-white>Authentication Driver: '.strtoupper($driver).'</>');
+        $this->line('⚙️  <fg=bright-white>Authentication Driver: ' . strtoupper($driver) . '</>');
         $this->newLine();
 
         switch ($driver) {
@@ -232,7 +236,7 @@ class InstallCommand extends BaseShieldCommand
     {
         $this->newLine();
 
-        if (! $this->passportKeysExist()) {
+        if (!$this->passportKeysExist()) {
             $this->info('Passport requires encryption keys...');
 
             if ($this->confirm('Generate Passport keys now?', true)) {
@@ -262,7 +266,7 @@ class InstallCommand extends BaseShieldCommand
 
         $envPath = base_path('.env');
 
-        if (! file_exists($envPath)) {
+        if (!file_exists($envPath)) {
             $this->warn('⚠️  .env file not found');
 
             return;
@@ -271,11 +275,11 @@ class InstallCommand extends BaseShieldCommand
         $contents = file_get_contents($envPath);
 
         // Check if JWT_SECRET exists
-        if (! preg_match('/^JWT_SECRET=/m', $contents)) {
+        if (!preg_match('/^JWT_SECRET=/m', $contents)) {
             $secret = bin2hex(random_bytes(32));
 
             $updated = $contents;
-            if (! str_ends_with($updated, "\n")) {
+            if (!str_ends_with($updated, "\n")) {
                 $updated .= "\n";
             }
             $updated .= "\n# JWT Configuration\n";
