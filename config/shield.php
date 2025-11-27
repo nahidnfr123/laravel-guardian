@@ -56,11 +56,13 @@ return [
     // Set custom views for emails, or leave null to use default templates
     'emails' => [
         'verify_email' => [
+            'subject' => 'Verify Email Address',
             'template' => null, // e.g., 'emails.verify-email'
             'expiration' => 6, // in hrs
             'redirect_url' => env('APP_URL').'/verify-email', // frontend url
         ],
         'reset_password' => [
+            'subject' => 'Reset Password Notification',
             'template' => null, // e.g., 'emails.reset-password'
             'expiration' => 6, // in hrs
             'redirect_url' => env('APP_URL').'/reset-password', // frontend url

@@ -11,6 +11,7 @@
 9. Me 🥶
 10. Change Password 🥶
 11. Scopes | Ability etc
+12. Prevent pulling one package config for another like no passport table for sanctum or jwt 
 
 
 # Role & Permission Requirements

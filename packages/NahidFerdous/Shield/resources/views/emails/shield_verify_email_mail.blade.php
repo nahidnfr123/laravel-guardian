@@ -47,6 +47,7 @@
             font-size: 14px;
         }
     </style>
+    <title>Verify Your Email Address</title>
 </head>
 <body>
 <div class="container">

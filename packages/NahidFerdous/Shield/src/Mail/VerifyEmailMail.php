@@ -32,7 +32,7 @@ class VerifyEmailMail extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Verify Email Address',
+            subject: config('shield.emails.verify_email.subject', 'Verify Email Address'),
         );
     }
 
@@ -49,7 +49,7 @@ class VerifyEmailMail extends Mailable implements ShouldQueue
         }
 
         return new Content(
-            view: 'shield::emails.shield-verify-email',
+            view: 'shield::emails.shield_verify_email_mail',
         );
     }
 
