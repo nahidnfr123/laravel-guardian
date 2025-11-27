@@ -169,7 +169,7 @@ class UserController extends Controller
 
         // Generate new token
         $token = Str::random(64);
-        $expiresAt = now()->addHours(24);
+        $expiresAt = now()->addHours(config('shield.emails.verify_email.expiration', 24));
 
         EmailVerificationToken::create([
             'user_id' => $user->id,
@@ -178,9 +178,10 @@ class UserController extends Controller
         ]);
 
         // Generate verification URL
-        $verificationUrl = url(config('shield.route_prefix').'/verify-email/'.$token);
+        $url = (string) config('shield.emails.verify_email.redirect_url', url(config('shield.route_prefix').'/verify-email'));
+        $redirectUrl = $url.'?token='.$token;
 
         // Send email
-        Mail::to($user->email)->send(new VerifyEmailMail($user, $verificationUrl));
+        Mail::to($user->email)->send(new VerifyEmailMail($user, $redirectUrl));
     }
 }

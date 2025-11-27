@@ -5,32 +5,53 @@ namespace NahidFerdous\Shield\Mail;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Content;
+use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
 class VerifyEmailMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
-    public $verificationUrl;
-    public $user;
+    /**
+     * Create a new message instance.
+     */
+    public function __construct(public $user, public $redirectUrl) {}
 
-    public function __construct($user, $verificationUrl)
+    /**
+     * Get the message envelope.
+     */
+    public function envelope(): Envelope
     {
-        $this->user = $user;
-        $this->verificationUrl = $verificationUrl;
+        return new Envelope(
+            subject: 'Verify Email Mail',
+        );
     }
 
-    public function build(): VerifyEmailMail
+    /**
+     * Get the message content definition.
+     */
+    public function content(): Content
     {
-        $customView = config('shield.email_templates.verify_email');
-
+        $customView = config('shield.emails.verify_email.template');
         if ($customView && view()->exists($customView)) {
-            return $this->subject('Verify Your Email Address')
-                ->view($customView);
+            return new Content(
+                view: $customView,
+            );
         }
 
-        // Default Laravel-style template
-        return $this->subject('Verify Your Email Address')
-            ->view('shield::emails.verify-email');
+        return new Content(
+            view: 'shield::emails.shield-verify-email',
+        );
+    }
+
+    /**
+     * Get the attachments for the message.
+     *
+     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
+     */
+    public function attachments(): array
+    {
+        return [];
     }
 }

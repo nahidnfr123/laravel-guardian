@@ -53,11 +53,18 @@ return [
 
     'delete_previous_access_tokens_on_login' => env('DELETE_PREVIOUS_ACCESS_TOKENS_ON_LOGIN', false),
 
-    // Email Templates
     // Set custom views for emails, or leave null to use default templates
-    'email_templates' => [
-        'verify_email' => env('SHIELD_VERIFY_EMAIL_TEMPLATE', null), // e.g., 'emails.custom-verify'
-        'reset_password' => env('SHIELD_RESET_PASSWORD_TEMPLATE', null), // e.g., 'emails.custom-reset'
+    'emails' => [
+        'verify_email' => [
+            'template' => null, // e.g., 'emails.verify-email'
+            'expiration' => 6, // in hrs
+            'redirect_url' => env('APP_URL').'/verify-email',
+        ],
+        'reset_password' => [
+            'template' => null, // e.g., 'emails.reset-password'
+            'expiration' => 6, // in hrs
+            'redirect_url' => env('APP_URL').'/reset-password',
+        ],
     ],
 
     // JWT Configuration

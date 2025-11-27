@@ -21,7 +21,7 @@ class ResetPasswordNotification extends Notification
 
     public function toMail($notifiable): MailMessage
     {
-        $customView = config('shield.email_templates.reset_password');
+        $customView = config('shield.emails.reset_password.template');
 
         $resetUrl = url(config('app.url').'/reset-password?token='.$this->token.'&email='.$notifiable->email);
 

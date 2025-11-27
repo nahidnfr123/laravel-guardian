@@ -14,7 +14,7 @@ class PrepareUserModelCommand extends BaseShieldCommand
     {
         $path = $this->option('path') ?: app_path('Models/User.php');
 
-        if (!file_exists($path)) {
+        if (! file_exists($path)) {
             $this->error(sprintf('User model not found at %s.', $path));
 
             return self::FAILURE;
@@ -55,7 +55,7 @@ class PrepareUserModelCommand extends BaseShieldCommand
     {
         $imports = [
             'NahidFerdous\\Shield\\Concerns\\HasShieldRoles',
-            'NahidFerdous\\Shield\\Notifications\\ResetPasswordNotification'
+            'NahidFerdous\\Shield\\Notifications\\ResetPasswordNotification',
         ];
 
         // Add appropriate HasApiTokens based on driver
@@ -70,13 +70,13 @@ class PrepareUserModelCommand extends BaseShieldCommand
         }
 
         // Find missing imports
-        $missing = array_filter($imports, fn($import) => !Str::contains($contents, "use {$import};"));
+        $missing = array_filter($imports, fn ($import) => ! Str::contains($contents, "use {$import};"));
 
         if (empty($missing)) {
             return $contents;
         }
 
-        if (!preg_match('/namespace\s+[^;]+;\s*/', $contents, $namespaceMatch, PREG_OFFSET_CAPTURE)) {
+        if (! preg_match('/namespace\s+[^;]+;\s*/', $contents, $namespaceMatch, PREG_OFFSET_CAPTURE)) {
             return $contents;
         }
 
@@ -98,13 +98,13 @@ class PrepareUserModelCommand extends BaseShieldCommand
         $insert = '';
 
         foreach ($missing as $import) {
-            $insert .= 'use ' . $import . ';' . $lineEnding;
+            $insert .= 'use '.$import.';'.$lineEnding;
         }
 
         if ($insertionPoint === $namespaceEnd) {
-            $insert = $lineEnding . $lineEnding . $insert;
-        } elseif (!str_ends_with(substr($contents, 0, $insertionPoint), $lineEnding)) {
-            $insert = $lineEnding . $insert;
+            $insert = $lineEnding.$lineEnding.$insert;
+        } elseif (! str_ends_with(substr($contents, 0, $insertionPoint), $lineEnding)) {
+            $insert = $lineEnding.$insert;
         }
 
         return substr_replace($contents, $insert, $insertionPoint, 0);
@@ -126,12 +126,12 @@ class PrepareUserModelCommand extends BaseShieldCommand
             $classDeclaration = $matches[0][0];
             $classStart = $matches[0][1];
 
-            if (isset($matches[2]) && !empty($matches[2][0])) {
+            if (isset($matches[2]) && ! empty($matches[2][0])) {
                 // Already has implements clause, add JWTSubject to it
-                $newDeclaration = str_replace($matches[3][0], ', JWTSubject' . $matches[3][0], $classDeclaration);
+                $newDeclaration = str_replace($matches[3][0], ', JWTSubject'.$matches[3][0], $classDeclaration);
             } else {
                 // No implements clause, add it
-                $newDeclaration = str_replace($matches[3][0], ' implements JWTSubject' . $matches[3][0], $classDeclaration);
+                $newDeclaration = str_replace($matches[3][0], ' implements JWTSubject'.$matches[3][0], $classDeclaration);
             }
 
             $contents = substr_replace($contents, $newDeclaration, $classStart, strlen($classDeclaration));
@@ -167,7 +167,7 @@ class PrepareUserModelCommand extends BaseShieldCommand
         }
 
         // Find the class closing brace
-        if (!preg_match('/class\s+User[^{]*\{/', $contents, $classMatch, PREG_OFFSET_CAPTURE)) {
+        if (! preg_match('/class\s+User[^{]*\{/', $contents, $classMatch, PREG_OFFSET_CAPTURE)) {
             return $contents;
         }
 
@@ -179,25 +179,25 @@ class PrepareUserModelCommand extends BaseShieldCommand
 
         $lineEnding = str_contains($contents, "\r\n") ? "\r\n" : "\n";
 
-        $methods = $lineEnding . '    /**' . $lineEnding;
-        $methods .= '     * Get the identifier that will be stored in the subject claim of the JWT.' . $lineEnding;
-        $methods .= '     *' . $lineEnding;
-        $methods .= '     * @return mixed' . $lineEnding;
-        $methods .= '     */' . $lineEnding;
-        $methods .= '    public function getJWTIdentifier(): mixed' . $lineEnding;
-        $methods .= '    {' . $lineEnding;
-        $methods .= '        return $this->getKey();' . $lineEnding;
-        $methods .= '    }' . $lineEnding;
+        $methods = $lineEnding.'    /**'.$lineEnding;
+        $methods .= '     * Get the identifier that will be stored in the subject claim of the JWT.'.$lineEnding;
+        $methods .= '     *'.$lineEnding;
+        $methods .= '     * @return mixed'.$lineEnding;
+        $methods .= '     */'.$lineEnding;
+        $methods .= '    public function getJWTIdentifier(): mixed'.$lineEnding;
+        $methods .= '    {'.$lineEnding;
+        $methods .= '        return $this->getKey();'.$lineEnding;
+        $methods .= '    }'.$lineEnding;
         $methods .= $lineEnding;
-        $methods .= '    /**' . $lineEnding;
-        $methods .= '     * Return a key value array, containing any custom claims to be added to the JWT.' . $lineEnding;
-        $methods .= '     *' . $lineEnding;
-        $methods .= '     * @return array' . $lineEnding;
-        $methods .= '     */' . $lineEnding;
-        $methods .= '    public function getJWTCustomClaims(): array' . $lineEnding;
-        $methods .= '    {' . $lineEnding;
-        $methods .= '        return [];' . $lineEnding;
-        $methods .= '    }' . $lineEnding;
+        $methods .= '    /**'.$lineEnding;
+        $methods .= '     * Return a key value array, containing any custom claims to be added to the JWT.'.$lineEnding;
+        $methods .= '     *'.$lineEnding;
+        $methods .= '     * @return array'.$lineEnding;
+        $methods .= '     */'.$lineEnding;
+        $methods .= '    public function getJWTCustomClaims(): array'.$lineEnding;
+        $methods .= '    {'.$lineEnding;
+        $methods .= '        return [];'.$lineEnding;
+        $methods .= '    }'.$lineEnding;
 
         return substr_replace($contents, $methods, $lastBrace, 0);
     }
@@ -227,7 +227,7 @@ class PrepareUserModelCommand extends BaseShieldCommand
 
     protected function ensureTraitUsage(string $contents, string $driver): string
     {
-        if (!preg_match('/class\s+User[^\{]*\{/', $contents, $classMatch, PREG_OFFSET_CAPTURE)) {
+        if (! preg_match('/class\s+User[^\{]*\{/', $contents, $classMatch, PREG_OFFSET_CAPTURE)) {
             return $contents;
         }
 
@@ -241,7 +241,7 @@ class PrepareUserModelCommand extends BaseShieldCommand
             return $contents;
         }
 
-        if (!$tokenTraitName && Str::contains($classBody, 'use HasShieldRoles;')) {
+        if (! $tokenTraitName && Str::contains($classBody, 'use HasShieldRoles;')) {
             return $contents;
         }
 
@@ -249,10 +249,10 @@ class PrepareUserModelCommand extends BaseShieldCommand
         $lineEnding = str_contains($contents, "\r\n") ? "\r\n" : "\n";
 
         if ($tokenTraitName) {
-            $insertion = $lineEnding . '    use ' . $tokenTraitName . ', HasShieldRoles;' . $lineEnding;
+            $insertion = $lineEnding.'    use '.$tokenTraitName.', HasShieldRoles;'.$lineEnding;
         } else {
             // JWT - only HasShieldRoles
-            $insertion = $lineEnding . '    use HasShieldRoles;' . $lineEnding;
+            $insertion = $lineEnding.'    use HasShieldRoles;'.$lineEnding;
         }
 
         return substr_replace($contents, $insertion, $classStart, 0);
@@ -261,13 +261,13 @@ class PrepareUserModelCommand extends BaseShieldCommand
     protected function hasCorrectTraits(string $classBody, string $tokenTraitName): bool
     {
         // Check if both traits are present in a single use statement
-        if (preg_match('/use\s+[^;]*' . $tokenTraitName . '[^;]*,\s*HasShieldRoles[^;]*;/', $classBody) ||
-            preg_match('/use\s+[^;]*HasShieldRoles[^;]*,\s*' . $tokenTraitName . '[^;]*;/', $classBody)) {
+        if (preg_match('/use\s+[^;]*'.$tokenTraitName.'[^;]*,\s*HasShieldRoles[^;]*;/', $classBody) ||
+            preg_match('/use\s+[^;]*HasShieldRoles[^;]*,\s*'.$tokenTraitName.'[^;]*;/', $classBody)) {
             return true;
         }
 
         // Check if both traits are present in separate use statements
-        if (preg_match('/use\s+' . $tokenTraitName . '\s*;/', $classBody) &&
+        if (preg_match('/use\s+'.$tokenTraitName.'\s*;/', $classBody) &&
             preg_match('/use\s+HasShieldRoles\s*;/', $classBody)) {
             return true;
         }
@@ -286,7 +286,7 @@ class PrepareUserModelCommand extends BaseShieldCommand
         // Remove imports for other drivers
         foreach ($allTraits as $trait) {
             if ($trait !== $currentTrait) {
-                $contents = preg_replace('/use\s+' . preg_quote($trait, '/') . ';\s*\n?/', '', $contents);
+                $contents = preg_replace('/use\s+'.preg_quote($trait, '/').';\s*\n?/', '', $contents);
             }
         }
 
@@ -301,7 +301,7 @@ class PrepareUserModelCommand extends BaseShieldCommand
     protected function removeOldTraitUsage(string $contents, string $driver): string
     {
         // Find the class body
-        if (!preg_match('/class\s+User[^\{]*\{/', $contents, $classMatch, PREG_OFFSET_CAPTURE)) {
+        if (! preg_match('/class\s+User[^\{]*\{/', $contents, $classMatch, PREG_OFFSET_CAPTURE)) {
             return $contents;
         }
 
@@ -339,7 +339,7 @@ class PrepareUserModelCommand extends BaseShieldCommand
                     if (str_contains($match[0][0], 'HasApiTokens')) {
                         $shouldRemove = true;
                     } elseif (str_contains($match[0][0], 'HasShieldRoles') &&
-                        !str_contains($match[0][0], 'HasApiTokens')) {
+                        ! str_contains($match[0][0], 'HasApiTokens')) {
                         // Keep standalone HasShieldRoles for JWT
                         $shouldRemove = false;
                     }
@@ -382,7 +382,7 @@ class PrepareUserModelCommand extends BaseShieldCommand
     {
         $authConfigPath = config_path('auth.php');
 
-        if (!file_exists($authConfigPath)) {
+        if (! file_exists($authConfigPath)) {
             $this->warn('config/auth.php not found. Please manually configure your auth guard.');
             $this->showManualAuthConfig($driver);
 
@@ -426,7 +426,7 @@ class PrepareUserModelCommand extends BaseShieldCommand
             $lineEnding = str_contains($contents, "\r\n") ? "\r\n" : "\n";
 
             // Insert the 'api' guard after 'web' guard
-            $insertion = ',' . $lineEnding . $lineEnding . '        ' . $guardConfig;
+            $insertion = ','.$lineEnding.$lineEnding.'        '.$guardConfig;
 
             return substr_replace($contents, $insertion, $webGuardEnd, 0);
         }
@@ -486,7 +486,7 @@ class PrepareUserModelCommand extends BaseShieldCommand
         }
 
         // Find the class closing brace
-        if (!preg_match('/class\s+User[^{]*\{/', $contents, $classMatch, PREG_OFFSET_CAPTURE)) {
+        if (! preg_match('/class\s+User[^{]*\{/', $contents, $classMatch, PREG_OFFSET_CAPTURE)) {
             return $contents;
         }
 
@@ -498,16 +498,16 @@ class PrepareUserModelCommand extends BaseShieldCommand
 
         $lineEnding = str_contains($contents, "\r\n") ? "\r\n" : "\n";
 
-        $method = $lineEnding . '    /**' . $lineEnding;
-        $method .= '     * Send the password reset notification.' . $lineEnding;
-        $method .= '     *' . $lineEnding;
-        $method .= '     * @param  string  $token' . $lineEnding;
-        $method .= '     * @return void' . $lineEnding;
-        $method .= '     */' . $lineEnding;
-        $method .= '    public function sendPasswordResetNotification($token): void' . $lineEnding;
-        $method .= '    {' . $lineEnding;
-        $method .= '        $this->notify(new ResetPasswordNotification($token));' . $lineEnding;
-        $method .= '    }' . $lineEnding;
+        $method = $lineEnding.'    /**'.$lineEnding;
+        $method .= '     * Send the password reset notification.'.$lineEnding;
+        $method .= '     *'.$lineEnding;
+        $method .= '     * @param  string  $token'.$lineEnding;
+        $method .= '     * @return void'.$lineEnding;
+        $method .= '     */'.$lineEnding;
+        $method .= '    public function sendPasswordResetNotification($token): void'.$lineEnding;
+        $method .= '    {'.$lineEnding;
+        $method .= '        $this->notify(new ResetPasswordNotification($token));'.$lineEnding;
+        $method .= '    }'.$lineEnding;
 
         return substr_replace($contents, $method, $lastBrace, 0);
     }
