@@ -70,6 +70,7 @@ class ShieldServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->mergeConfigFrom(__DIR__.'/../../config/shield.php', 'shield');
+        $this->app->register(ShieldEventServiceProvider::class);
         $this->registerValidations();
         $this->registerServices();
     }
