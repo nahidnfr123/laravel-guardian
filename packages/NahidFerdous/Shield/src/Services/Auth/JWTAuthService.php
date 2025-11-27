@@ -84,10 +84,6 @@ class JWTAuthService extends AuthService
             JWTAuth::setToken($token)->authenticate();
 
             return true;
-        } catch (TokenExpiredException $e) {
-            return false;
-        } catch (TokenInvalidException $e) {
-            return false;
         } catch (JWTException $e) {
             return false;
         }
@@ -124,8 +120,8 @@ class JWTAuthService extends AuthService
         }
 
         // Temporarily set longer TTL for refresh token (ensure integer)
-        $originalTtl = config('jwt.ttl', 60);
-        config(['jwt.ttl' => (int) $this->refreshTtl]);
+        // $originalTtl = config('jwt.ttl', 60);
+        // config(['jwt.ttl' => (int)$this->refreshTtl]);
 
         $customClaims = [
             'type' => 'refresh',
@@ -134,7 +130,7 @@ class JWTAuthService extends AuthService
         $refreshToken = JWTAuth::customClaims($customClaims)->fromUser($user);
 
         // Restore original TTL
-        config(['jwt.ttl' => (int) $originalTtl]);
+        // config(['jwt.ttl' => (int)$originalTtl]);
 
         return $refreshToken;
     }
@@ -152,7 +148,7 @@ class JWTAuthService extends AuthService
     }
 
     /**
-     * Get the authenticated user from token
+     * Get the authenticated user from a token
      */
     public function getUserFromToken(string $token)
     {
@@ -164,7 +160,7 @@ class JWTAuthService extends AuthService
     }
 
     /**
-     * Check if token is blacklisted
+     * Check if the token is blacklisted
      */
     public function isBlacklisted(string $token): bool
     {

@@ -26,12 +26,13 @@ class PrepareUserModelCommand extends BaseShieldCommand
         $original = file_get_contents($path);
         $updated = $original;
 
-        // IMPORTANT: Remove old traits and interfaces BEFORE adding new ones
+        // STEP 1: Remove old traits and interfaces BEFORE adding new ones
         $updated = $this->removeOldTraitUsage($updated, $driver);
         $updated = $this->removeOldImports($updated, $driver);
         $updated = $this->removeOldInterfaces($updated, $driver);
         $updated = $this->removeJWTMethods($updated, $driver);
 
+        // STEP 2: Add new imports, interfaces, traits, and methods
         $updated = $this->ensureImports($updated, $driver);
         $updated = $this->ensureInterfaces($updated, $driver);
         $updated = $this->ensureTraitUsage($updated, $driver);
@@ -121,20 +122,37 @@ class PrepareUserModelCommand extends BaseShieldCommand
             return $contents;
         }
 
-        // Find the class declaration
-        if (preg_match('/(class\s+User[^{]*)(implements\s+[^{]+)?(\{)/', $contents, $matches, PREG_OFFSET_CAPTURE)) {
-            $classDeclaration = $matches[0][0];
+        // Find the class declaration with better pattern matching
+        // This pattern captures: class User ... implements ... { or class User ... {
+        if (preg_match('/(class\s+User[^{]*?)(implements\s+([^{]+?))?\s*(\{)/', $contents, $matches, PREG_OFFSET_CAPTURE)) {
+            $fullMatch = $matches[0][0];
             $classStart = $matches[0][1];
 
-            if (isset($matches[2]) && ! empty($matches[2][0])) {
-                // Already has implements clause, add JWTSubject to it
-                $newDeclaration = str_replace($matches[3][0], ', JWTSubject'.$matches[3][0], $classDeclaration);
-            } else {
-                // No implements clause, add it
-                $newDeclaration = str_replace($matches[3][0], ' implements JWTSubject'.$matches[3][0], $classDeclaration);
-            }
+            if (isset($matches[2]) && ! empty(trim($matches[2][0]))) {
+                // Already has implements clause
+                $implementsList = trim($matches[3][0]);
 
-            $contents = substr_replace($contents, $newDeclaration, $classStart, strlen($classDeclaration));
+                // Split existing interfaces and check if JWTSubject is already there
+                $interfaces = array_map('trim', explode(',', $implementsList));
+                if (! in_array('JWTSubject', $interfaces)) {
+                    // Add JWTSubject to the list
+                    $newImplements = $implementsList.', JWTSubject';
+                    $newDeclaration = str_replace(
+                        'implements '.$implementsList,
+                        'implements '.$newImplements,
+                        $fullMatch
+                    );
+                    $contents = substr_replace($contents, $newDeclaration, $classStart, strlen($fullMatch));
+                }
+            } else {
+                // No implements clause, add it before the opening brace
+                $newDeclaration = str_replace(
+                    $matches[4][0],
+                    ' implements JWTSubject'.$matches[4][0],
+                    $fullMatch
+                );
+                $contents = substr_replace($contents, $newDeclaration, $classStart, strlen($fullMatch));
+            }
         }
 
         return $contents;
@@ -146,10 +164,15 @@ class PrepareUserModelCommand extends BaseShieldCommand
             return $contents; // Keep JWTSubject for JWT
         }
 
-        // Remove JWTSubject interface for non-JWT drivers
-        $contents = preg_replace('/,\s*JWTSubject/', '', $contents);
-        $contents = preg_replace('/implements\s+JWTSubject\s*,/', 'implements', $contents);
-        $contents = preg_replace('/implements\s+JWTSubject/', '', $contents);
+        // For non-JWT drivers, remove JWTSubject from implements clause
+        // Handle: implements JWTSubject, OtherInterface
+        $contents = preg_replace('/implements\s+JWTSubject\s*,\s*/', 'implements ', $contents);
+
+        // Handle: implements OtherInterface, JWTSubject
+        $contents = preg_replace('/,\s*JWTSubject\s*/', '', $contents);
+
+        // Handle: implements JWTSubject (only interface)
+        $contents = preg_replace('/\s+implements\s+JWTSubject\s*/', ' ', $contents);
 
         return $contents;
     }
@@ -359,7 +382,7 @@ class PrepareUserModelCommand extends BaseShieldCommand
     protected function getTokenTraitForDriver(string $driver): ?string
     {
         return match ($driver) {
-            'sanctum' => 'Laravel\\Sanctum\\HasApiTokens',
+            // 'sanctum' => 'Laravel\\Sanctum\\HasApiTokens',
             'passport' => 'Laravel\\Passport\\HasApiTokens',
             'jwt' => null, // JWT doesn't need HasApiTokens
             default => 'Laravel\\Sanctum\\HasApiTokens',

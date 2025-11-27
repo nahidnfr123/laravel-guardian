@@ -5,10 +5,7 @@ namespace NahidFerdous\Shield\Listeners;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Str;
 use NahidFerdous\Shield\Events\ShieldUserRegisterEvent;
-use NahidFerdous\Shield\Mail\VerifyEmailMail;
-use NahidFerdous\Shield\Models\EmailVerificationToken;
 use NahidFerdous\Shield\Services\Auth\AuthServiceFactory;
 
 class ShieldUserRegisterListener implements ShouldQueue
