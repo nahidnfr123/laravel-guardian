@@ -3,18 +3,15 @@
 namespace NahidFerdous\Shield\Listeners;
 
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
-use NahidFerdous\Shield\Events\UserRegistered;
+use NahidFerdous\Shield\Events\ShieldUserRegisterEvent;
 use NahidFerdous\Shield\Mail\VerifyEmailMail;
 use NahidFerdous\Shield\Models\EmailVerificationToken;
 
-class SendWelcomeEmail implements ShouldQueue
+class ShieldUserRegisterListener implements ShouldQueue
 {
-    use InteractsWithQueue;
-
     /**
      * Create the event listener.
      */
@@ -26,7 +23,7 @@ class SendWelcomeEmail implements ShouldQueue
     /**
      * Handle the event.
      */
-    public function handle(UserRegistered $event): void
+    public function handle(ShieldUserRegisterEvent $event): void
     {
         $user = $event->user;
 
@@ -35,6 +32,7 @@ class SendWelcomeEmail implements ShouldQueue
             'user_id' => $user->id,
             'email' => $user->email,
             'name' => $user->name,
+            'request_data' => $event->requestData,
         ]);
 
         // Send verification email if enabled
@@ -74,7 +72,7 @@ class SendWelcomeEmail implements ShouldQueue
         $url = (string) config('shield.emails.verify_email.redirect_url', url(config('shield.route_prefix').'/verify-email'));
         $redirectUrl = $url.'?token='.$token;
 
-        // Send email
+        // Send email (will be queued by the mailable itself)
         Mail::to($user->email)->send(new VerifyEmailMail($user, $redirectUrl));
     }
 }

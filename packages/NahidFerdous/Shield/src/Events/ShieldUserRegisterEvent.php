@@ -6,20 +6,20 @@ use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class UserRegistered
+class ShieldUserRegisterEvent
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public $user;
 
-    public $request;
+    public $requestData;
 
     /**
      * Create a new event instance.
      */
-    public function __construct($user, $request = null)
+    public function __construct($user, array $requestData = [])
     {
         $this->user = $user;
-        $this->request = $request;
+        $this->requestData = $requestData;
     }
 }

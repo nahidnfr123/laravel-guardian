@@ -3,8 +3,8 @@
 namespace NahidFerdous\Shield\Providers;
 
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
-use NahidFerdous\Shield\Events\UserRegistered;
-use NahidFerdous\Shield\Listeners\SendWelcomeEmail;
+use NahidFerdous\Shield\Events\ShieldUserRegisterEvent;
+use NahidFerdous\Shield\Listeners\ShieldUserRegisterListener;
 
 class ShieldEventServiceProvider extends ServiceProvider
 {
@@ -14,8 +14,8 @@ class ShieldEventServiceProvider extends ServiceProvider
      * @var array<class-string, array<int, class-string>>
      */
     protected $listen = [
-        UserRegistered::class => [
-            SendWelcomeEmail::class,
+        ShieldUserRegisterEvent::class => [
+            ShieldUserRegisterListener::class,
             // Add more listeners here
         ],
     ];
