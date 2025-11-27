@@ -69,7 +69,7 @@ class AuthController extends Controller
      */
     public function me(Request $request): \Illuminate\Http\JsonResponse
     {
-        return $this->success($request->user());
+        return $this->success('me', $request->user());
     }
 
     /**
@@ -184,18 +184,20 @@ class AuthController extends Controller
     {
         $request->validate([
             'current_password' => 'required',
-            'password' => 'required|min:8|confirmed',
+            'password' => 'required|min:6|confirmed',
         ]);
 
         $user = $request->user();
 
         if (! Hash::check($request->current_password, $user->password)) {
-            return $this->failure('Current password is incorrect', 400);
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'current_password' => ['Current password is incorrect'],
+            ]);
         }
 
         $user->password = Hash::make($request->password);
         $user->save();
 
-        return $this->success('Password changed successfully');
+        return $this->success('Password updated successfully');
     }
 }

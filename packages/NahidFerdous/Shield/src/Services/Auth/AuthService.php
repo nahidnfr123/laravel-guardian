@@ -135,7 +135,6 @@ abstract class AuthService
     protected function successResponse($user, string $token, array $extra = []): array
     {
         return array_merge([
-            'error' => 0,
             'id' => $user->id,
             'name' => $user->name,
             'email' => $user->email,

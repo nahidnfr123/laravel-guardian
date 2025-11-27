@@ -71,7 +71,7 @@ Route::middleware([$getAuthMiddleware])->group(function () use ($adminAbilities,
     Route::post('/refresh', [AuthController::class, 'refresh'])->name('refresh');
 
     Route::middleware(['throttle:10,1'])->group(function () {
-        Route::post('/change-password', [AuthController::class, 'changePassword'])->name('change.password');
+        Route::post('/change-password', [AuthController::class, 'changePassword'])->name('shield.change.password');
     });
 
     Route::middleware([$userAbilities])->group(function () {
