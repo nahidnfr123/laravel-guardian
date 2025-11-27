@@ -10,7 +10,7 @@ return [
     'disable_commands' => env('SHIELD_DISABLE_COMMANDS', false),
 
     // Authentication driver: 'sanctum', 'passport', 'jwt'
-    'auth_driver' => env('SHIELD_AUTH_DRIVER', 'sanctum'),
+    'auth_driver' => env('SHIELD_AUTH_DRIVER', 'passport'),
 
     'route_prefix' => env('SHIELD_ROUTE_PREFIX', 'api'),
     'route_name_prefix' => env('SHIELD_ROUTE_NAME_PREFIX', 'shield.'),
@@ -139,9 +139,9 @@ return [
     ],
 
     'abilities' => [
-        //        'admin' => ['admin', 'super-admin'],
-        //        'user_update' => ['admin', 'super-admin', 'user'],
-        'admin' => ['t'],
-        'user_update' => ['t'],
+                'admin' => ['admin', 'super-admin'],
+                'user_update' => ['admin', 'super-admin', 'user'],
+//        'admin' => ['t'],
+//        'user_update' => ['t'],
     ],
 ];

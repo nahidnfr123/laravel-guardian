@@ -10,7 +10,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use NahidFerdous\Shield\Concerns\HasShieldRoles;
 use NahidFerdous\Shield\Notifications\ResetPasswordNotification;
-use Laravel\Sanctum\HasApiTokens;
+use Laravel\Passport\HasApiTokens;
 
 class User extends Authenticatable implements MustVerifyEmail{
     use HasApiTokens, HasShieldRoles;
@@ -66,4 +66,5 @@ class User extends Authenticatable implements MustVerifyEmail{
         $this->notify(new ResetPasswordNotification($token));
     }
 
+    
     }
