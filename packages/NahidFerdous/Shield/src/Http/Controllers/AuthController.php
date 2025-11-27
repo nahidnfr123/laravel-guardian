@@ -80,11 +80,21 @@ class AuthController extends Controller
      */
     public function verifyEmail(string $token)
     {
+        // Verify if the hash is correct
+        if (!hash_equals((string) $token, sha1($user->getEmailForVerification()))) {
+            return response()->json(['message' => 'Invalid verification link.'], 403);
+        }
+
+        // Mark email as verified
+        if (!$user->hasVerifiedEmail()) {
+            $user->markEmailAsVerified();
+        }
+
         $verification = EmailVerificationToken::where('token', $token)
             ->where('expires_at', '>', now())
             ->first();
 
-        if (! $verification) {
+        if (!$verification) {
             return response([
                 'error' => 1,
                 'message' => 'Invalid or expired verification token',
@@ -94,7 +104,7 @@ class AuthController extends Controller
         $userClass = config('shield.models.user');
         $user = $userClass::find($verification->user_id);
 
-        if (! $user) {
+        if (!$user) {
             return response([
                 'error' => 1,
                 'message' => 'User not found',
@@ -109,15 +119,43 @@ class AuthController extends Controller
                 'message' => 'Email already verified',
             ], 200);
         }
-
-        $user->email_verified_at = now();
-        $user->save();
+        if (!$user->hasVerifiedEmail()) {
+            $user->markEmailAsVerified();
+        }
+//        $user->email_verified_at = now();
+//        $user->save();
         $verification->delete();
 
         return response([
             'error' => 0,
             'message' => 'Email verified successfully',
         ], 200);
+    }
+
+    /**
+     * Verify user email with token
+     */
+    public function resendEmailVerificationLink(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+        ]);
+
+        $userClass = config('shield.models.user');
+        $user = $userClass::where('email', $request->email)->firstOrFail();
+
+        if ($user->email_verified_at) {
+            return response([
+                'error' => 0,
+                'message' => 'Email already verified',
+            ], 200);
+        }
+        $user->sendEmailVerificationNotification();
+
+        return response([
+            'error' => 0,
+            'message' => 'Verification link sent to your email',
+        ]);
     }
 
     /**
@@ -195,7 +233,7 @@ class AuthController extends Controller
 
         $user = $request->user();
 
-        if (! Hash::check($request->current_password, $user->password)) {
+        if (!Hash::check($request->current_password, $user->password)) {
             return response([
                 'error' => 1,
                 'message' => 'Current password is incorrect',

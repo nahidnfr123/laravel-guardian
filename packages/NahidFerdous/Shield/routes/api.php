@@ -33,19 +33,27 @@ $getAbilityMiddleware = match ($driver) {
 
 $adminAbilities = $getAbilityMiddleware.':'.implode(',', config('shield.abilities.admin', ['admin', 'super-admin']));
 $userAbilities = $getAbilityMiddleware.':'.implode(',', config('shield.abilities.user_update', ['admin', 'super-admin', 'user']));
+$throttleAttempts = config('shield.auth.throttle_attempts', 6);
 
 Route::get('shield', [ShieldController::class, 'shield'])->name('shield.info');
 Route::get('shield/version', [ShieldController::class, 'version'])->name('shield.version');
 
-Route::post('login', [AuthController::class, 'login'])->name('shield.login');
-Route::post('register', [UserController::class, 'store'])->name('shield.users.store');
-
-Route::post('forgot-password', [AuthController::class, 'forgotPassword'])->name('shield.forgot-password');
-Route::post('reset-password', [AuthController::class, 'resetPassword'])->name('shield.reset-password');
+// Authentication routes with throttling
+Route::middleware(["throttle:{$throttleAttempts},1"])->group(function () {
+    Route::post('login', [AuthController::class, 'login'])->name('shield.login');
+    Route::post('register', [UserController::class, 'store'])->name('shield.users.store');
+    Route::post('forgot-password', [AuthController::class, 'forgotPassword'])->name('shield.forgot-password');
+    Route::post('reset-password', [AuthController::class, 'resetPassword'])->name('shield.reset-password');
+});
 
 // Email verification route (only if check_verified is enabled)
-if (config('shield.validation.create_user.check_verified', false) || config('shield.validation.login.check_verified', false)) {
-    Route::get('verify-email/{token}', [AuthController::class, 'verifyEmail'])->name('shield.verify-email');
+if (config('shield.auth.check_verified', false)) {
+    Route::get('verify-email/{token}', [AuthController::class, 'verifyEmail'])
+        ->middleware(['signed', "throttle:{$throttleAttempts},1"])
+        ->name('shield.verify-email');
+    Route::middleware(["throttle:{$throttleAttempts},1"])->group(function () {
+        Route::post('resend-email-verification-link', [AuthController::class, 'resendEmailVerificationLink'])->name('shield.resend-email-verification-link');
+    });
 }
 
 // Social authentication routes
@@ -61,7 +69,10 @@ Route::middleware([$getAuthMiddleware])->group(function () use ($adminAbilities,
     Route::get('me', [AuthController::class, 'me'])->name('shield.me');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::post('/refresh', [AuthController::class, 'refresh'])->name('refresh');
-    Route::post('/change-password', [AuthController::class, 'changePassword'])->name('change.password');
+
+    Route::middleware(['throttle:10,1'])->group(function () {
+        Route::post('/change-password', [AuthController::class, 'changePassword'])->name('change.password');
+    });
 
     Route::middleware([$userAbilities])->group(function () {
         Route::match(['put', 'patch', 'post'], 'users/{user}', [UserController::class, 'update'])->name('shield.users.update');

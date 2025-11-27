@@ -105,12 +105,12 @@ class ShieldServiceProvider extends ServiceProvider
 
     protected function registerValidations(): void
     {
-        $customClass = config('shield.validation.create_user.request_class');
+        $customClass = config('shield.auth.create_user.request_class');
         // Only bind if the user provided a custom request
         if ($customClass && $customClass !== ShieldCreateUserRequest::class) {
             $this->app->bind(ShieldCreateUserRequest::class, $customClass);
         }
-        $loginClass = config('shield.validation.login.request_class');
+        $loginClass = config('shield.auth.login.request_class');
 
         if ($loginClass && $loginClass !== ShieldLoginRequest::class) {
             $this->app->bind(ShieldLoginRequest::class, $loginClass);

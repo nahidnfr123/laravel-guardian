@@ -33,17 +33,17 @@ return [
         'role_privilege' => 'privilege_role',
     ],
 
-    'validation' => [
+    'auth' => [
+        'throttle_attempts' => 6,
+        'check_verified' => env('SHIELD_CHECK_EMAIL_VERIFIED', false),
         'create_user' => [
             'request_class' => \NahidFerdous\Shield\Http\Requests\ShieldCreateUserRequest::class,
             'send_verification_email' => env('SHIELD_SEND_VERIFICATION_EMAIL', true),
-            'check_verified' => env('SHIELD_CHECK_EMAIL_VERIFIED', false),
         ],
         'login' => [
             'request_class' => \NahidFerdous\Shield\Http\Requests\ShieldLoginRequest::class,
             'credential_field' => 'email',
             'verification_field' => 'email_verified_at',
-            'check_verified' => env('SHIELD_CHECK_EMAIL_VERIFIED', false),
         ],
     ],
 

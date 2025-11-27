@@ -38,7 +38,7 @@ abstract class AuthService
      */
     protected function findUserByCredentials(array $credentials)
     {
-        $credentialField = config('shield.validation.login.credential_field', 'email');
+        $credentialField = config('shield.auth.login.credential_field', 'email');
 
         if (str_contains($credentialField, '|')) {
             $fields = explode('|', $credentialField);
@@ -98,11 +98,11 @@ abstract class AuthService
      */
     protected function userIsVerified($user): bool
     {
-        if (! config('shield.validation.login.check_verified', false)) {
+        if (! config('shield.auth.check_verified', false)) {
             return true;
         }
 
-        $verificationField = config('shield.validation.login.verification_field', 'email_verified_at');
+        $verificationField = config('shield.auth.login.verification_field', 'email_verified_at');
 
         return (bool) ($user->{$verificationField} ?? false);
     }

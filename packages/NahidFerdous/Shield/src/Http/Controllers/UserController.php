@@ -2,12 +2,14 @@
 
 namespace NahidFerdous\Shield\Http\Controllers;
 
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\Exceptions\MissingAbilityException;
+use NahidFerdous\Shield\Events\UserRegistered;
 use NahidFerdous\Shield\Http\Requests\ShieldCreateUserRequest;
 use NahidFerdous\Shield\Mail\VerifyEmailMail;
 use NahidFerdous\Shield\Models\EmailVerificationToken;
@@ -54,7 +56,7 @@ class UserController extends Controller
         }
 
         // Set email_verified_at to null if email verification is enabled
-        if (config('shield.validation.create_user.check_verified', false)) {
+        if (config('shield.auth.check_verified', false)) {
             $userData['email_verified_at'] = null;
         }
 
@@ -64,10 +66,11 @@ class UserController extends Controller
         $user->roles()->attach(Role::where('slug', $defaultRoleSlug)->first());
         ShieldCache::forgetUser($user);
 
-        // Send verification email if enabled
-        if (config('shield.validation.create_user.send_verification_email', false)) {
-            $this->sendVerificationEmail($user);
-        }
+        // Fire the UserRegistered event so, package user can listen to the event and perform other actions
+        event(new UserRegistered($user, $request));
+
+        // laravel default email verification can be sent using this event
+        // (new Registered($user));
 
         return response($user, 201);
     }
@@ -157,31 +160,5 @@ class UserController extends Controller
         }
 
         return $this->userQuery()->findOrFail($user);
-    }
-
-    /**
-     * Send verification email to user
-     */
-    protected function sendVerificationEmail($user): void
-    {
-        // Delete any existing tokens for this user
-        EmailVerificationToken::where('user_id', $user->id)->delete();
-
-        // Generate new token
-        $token = Str::random(64);
-        $expiresAt = now()->addHours(config('shield.emails.verify_email.expiration', 24));
-
-        EmailVerificationToken::create([
-            'user_id' => $user->id,
-            'token' => $token,
-            'expires_at' => $expiresAt,
-        ]);
-
-        // Generate verification URL
-        $url = (string) config('shield.emails.verify_email.redirect_url', url(config('shield.route_prefix').'/verify-email'));
-        $redirectUrl = $url.'?token='.$token;
-
-        // Send email
-        Mail::to($user->email)->send(new VerifyEmailMail($user, $redirectUrl));
     }
 }

@@ -13,7 +13,7 @@ class ShieldLoginRequest extends FormRequest
 
     public function rules(): array
     {
-        $credentialField = config('shield.validation.login.credential_field', 'email');
+        $credentialField = config('shield.auth.login.credential_field', 'email');
 
         $rules = [
             'password' => 'required',
