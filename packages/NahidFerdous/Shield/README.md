@@ -1,3 +1,5 @@
+![logo.png](logo.png)
+
 # Laravel Shield - Complete Authentication Package
 
 A comprehensive Laravel package for authentication (Sanctum, Passport, JWT) and role/permission management with social login support.
