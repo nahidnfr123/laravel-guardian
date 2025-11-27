@@ -6,9 +6,12 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use NahidFerdous\Shield\Models\Role;
 use NahidFerdous\Shield\Support\ShieldCache;
+use NahidFerdous\Shield\Traits\ApiResponseTrait;
 
 class UserRoleController extends Controller
 {
+    use ApiResponseTrait;
+
     public function index($user)
     {
         $user = $this->resolveUser($user);

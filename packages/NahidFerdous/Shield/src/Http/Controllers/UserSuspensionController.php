@@ -4,9 +4,12 @@ namespace NahidFerdous\Shield\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use NahidFerdous\Shield\Traits\ApiResponseTrait;
 
 class UserSuspensionController extends Controller
 {
+    use ApiResponseTrait;
+
     public function store(Request $request, $user)
     {
         $payload = $request->validate([

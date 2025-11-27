@@ -4,9 +4,12 @@ namespace NahidFerdous\Shield\Http\Controllers;
 
 use Illuminate\Routing\Controller;
 use NahidFerdous\Shield\Services\SocialAuthService;
+use NahidFerdous\Shield\Traits\ApiResponseTrait;
 
 class SocialAuthController extends Controller
 {
+    use ApiResponseTrait;
+
     protected $socialAuthService;
 
     public function __construct(SocialAuthService $socialAuthService)

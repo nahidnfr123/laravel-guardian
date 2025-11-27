@@ -2,8 +2,6 @@
 
 namespace NahidFerdous\Shield\Traits;
 
-use Illuminate\Http\JsonResponse;
-
 trait ApiResponseTrait
 {
     protected function success($message, $data = null, $status = 200): \Illuminate\Http\JsonResponse
@@ -20,10 +18,7 @@ trait ApiResponseTrait
     /**
      * Process failures and ensure an appropriate response and status code is returned.
      *
-     * @param $message
-     * @param int $status
-     * @param null $errors
-     * @return JsonResponse
+     * @param  null  $errors
      */
     protected function failure($message, int $status = 400, $errors = null): \Illuminate\Http\JsonResponse
     {

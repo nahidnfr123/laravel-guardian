@@ -81,14 +81,14 @@ class AuthController extends Controller
             ->where('expires_at', '>', now())
             ->first();
 
-        if (!$verification) {
+        if (! $verification) {
             return $this->failure('Invalid or expired verification token', 400);
         }
 
         $userClass = config('shield.models.user');
         $user = $userClass::find($verification->user_id);
 
-        if (!$user) {
+        if (! $user) {
             return $this->failure('User not found', 404);
         }
 
@@ -187,7 +187,7 @@ class AuthController extends Controller
 
         $user = $request->user();
 
-        if (!Hash::check($request->current_password, $user->password)) {
+        if (! Hash::check($request->current_password, $user->password)) {
             return $this->failure('Current password is incorrect', 400);
         }
 

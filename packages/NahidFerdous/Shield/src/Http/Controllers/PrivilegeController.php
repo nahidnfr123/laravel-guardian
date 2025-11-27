@@ -7,15 +7,18 @@ use Illuminate\Routing\Controller;
 use Illuminate\Validation\Rule;
 use NahidFerdous\Shield\Models\Privilege;
 use NahidFerdous\Shield\Support\ShieldCache;
+use NahidFerdous\Shield\Traits\ApiResponseTrait;
 
 class PrivilegeController extends Controller
 {
-    public function index()
+    use ApiResponseTrait;
+
+    public function index(): \Illuminate\Http\JsonResponse
     {
-        return Privilege::with('roles:id,name,slug')->get();
+        return $this->success('List of privileges', Privilege::with('roles:id,name,slug')->get());
     }
 
-    public function store(Request $request)
+    public function store(Request $request): \Illuminate\Http\JsonResponse
     {
         $data = $request->validate([
             'name' => ['required', 'string'],
@@ -25,15 +28,15 @@ class PrivilegeController extends Controller
 
         $privilege = Privilege::create($data);
 
-        return $privilege->fresh('roles:id,name,slug');
+        return $this->success('Privilege created', $privilege->fresh('roles:id,name,slug'));
     }
 
-    public function show(Privilege $privilege)
+    public function show(Privilege $privilege): \Illuminate\Http\JsonResponse
     {
-        return $privilege->load('roles:id,name,slug');
+        return $this->success('Privilege details', $privilege->load('roles:id,name,slug'));
     }
 
-    public function update(Request $request, Privilege $privilege)
+    public function update(Request $request, Privilege $privilege): \Illuminate\Http\JsonResponse
     {
         $data = $request->validate([
             'name' => ['sometimes', 'string'],
@@ -49,15 +52,15 @@ class PrivilegeController extends Controller
             ShieldCache::forgetUsersByPrivilege($privilege);
         }
 
-        return $privilege->fresh('roles:id,name,slug');
+        return $this->success('Privilege updated', $privilege->fresh('roles:id,name,slug'));
     }
 
-    public function destroy(Privilege $privilege)
+    public function destroy(Privilege $privilege): \Illuminate\Http\JsonResponse
     {
         ShieldCache::forgetUsersByPrivilege($privilege);
         $privilege->roles()->detach();
         $privilege->delete();
 
-        return response(['error' => 0, 'message' => 'privilege has been deleted']);
+        return $this->success('Privilege deleted successfully.');
     }
 }

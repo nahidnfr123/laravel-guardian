@@ -6,9 +6,12 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use NahidFerdous\Shield\Models\Role;
 use NahidFerdous\Shield\Support\ShieldCache;
+use NahidFerdous\Shield\Traits\ApiResponseTrait;
 
 class RoleController extends Controller
 {
+    use ApiResponseTrait;
+
     public function index()
     {
         return Role::all();

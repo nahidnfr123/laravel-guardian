@@ -3,9 +3,12 @@
 namespace NahidFerdous\Shield\Http\Controllers;
 
 use Illuminate\Routing\Controller;
+use NahidFerdous\Shield\Traits\ApiResponseTrait;
 
 class ShieldController extends Controller
 {
+    use ApiResponseTrait;
+
     public function shield()
     {
         return response([

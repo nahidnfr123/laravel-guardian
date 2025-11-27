@@ -11,15 +11,18 @@ use NahidFerdous\Shield\Events\ShieldUserRegisterEvent;
 use NahidFerdous\Shield\Http\Requests\ShieldCreateUserRequest;
 use NahidFerdous\Shield\Models\Role;
 use NahidFerdous\Shield\Support\ShieldCache;
+use NahidFerdous\Shield\Traits\ApiResponseTrait;
 
 class UserController extends Controller
 {
+    use ApiResponseTrait;
+
     /**
      * Get all users
      */
-    public function index()
+    public function index(): \Illuminate\Http\JsonResponse
     {
-        return $this->userQuery()->get();
+        return $this->success('User list', $this->userQuery()->get());
     }
 
     /**
@@ -69,21 +72,21 @@ class UserController extends Controller
         // laravel default email verification can be sent using this event
         // (new Registered($user));
 
-        return response($user, 201);
+        return $this->success('User created successfully', $user);
     }
 
     /**
      * Show a specific user
      */
-    public function show($user): \Illuminate\Contracts\Auth\Authenticatable
+    public function show($user): \Illuminate\Http\JsonResponse
     {
-        return $this->resolveUser($user);
+        return $this->success('User details', $this->resolveUser($user));
     }
 
     /**
      * Update a user
      */
-    public function update(Request $request, $user): \Illuminate\Contracts\Auth\Authenticatable
+    public function update(Request $request, $user): \Illuminate\Http\JsonResponse
     {
         $user = $this->resolveUser($user);
 
@@ -96,13 +99,13 @@ class UserController extends Controller
         if ($loggedInUser->id === $user->id) {
             $user->save();
 
-            return $user;
+            return $this->success('User updated successfully.', $user);
         }
 
         if ($loggedInUser->tokenCan('admin') || $loggedInUser->tokenCan('super-admin')) {
             $user->save();
 
-            return $user;
+            return $this->success('User updated successfully.', $user);
         }
 
         throw new MissingAbilityException('Not Authorized');
@@ -111,7 +114,7 @@ class UserController extends Controller
     /**
      * Delete a user
      */
-    public function destroy($user)
+    public function destroy($user): \Illuminate\Http\JsonResponse
     {
         $user = $this->resolveUser($user);
         $adminRole = Role::where('slug', 'admin')->first();
@@ -119,14 +122,14 @@ class UserController extends Controller
         if ($adminRole && $user->roles->contains($adminRole)) {
             $adminCount = $adminRole->users()->count();
             if ($adminCount === 1) {
-                return response(['error' => 1, 'message' => 'Create another admin before deleting this only admin user'], 409);
+                return $this->failure('Create another admin before deleting this only admin user', 409);
             }
         }
 
         $user->delete();
         ShieldCache::forgetUser($user);
 
-        return response(['error' => 0, 'message' => 'User deleted successfully']);
+        return $this->success('User deleted successfully.');
     }
 
     /**
