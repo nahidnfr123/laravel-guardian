@@ -85,7 +85,7 @@ class AuthController extends Controller
             return $this->failure('Invalid or expired verification token', 400);
         }
 
-        $userClass = config('shield.models.user');
+        $userClass = config('shield.models.user', 'App\\Models\\User');
         $user = $userClass::find($verification->user_id);
 
         if (! $user) {
@@ -113,7 +113,7 @@ class AuthController extends Controller
             'email' => 'required|email',
         ]);
 
-        $userClass = config('shield.models.user');
+        $userClass = config('shield.models.user', 'App\\Models\\User');
         $user = $userClass::where('email', $request->email)->firstOrFail();
 
         if ($user->email_verified_at) {
@@ -154,7 +154,7 @@ class AuthController extends Controller
         $request->validate([
             'token' => 'required',
             'email' => 'required|email',
-            'password' => 'required|min:8|confirmed',
+            'password' => 'required|min:6|confirmed',
         ]);
 
         $status = Password::reset(
