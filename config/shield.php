@@ -42,8 +42,8 @@ return [
         ],
         'login' => [
             'request_class' => \NahidFerdous\Shield\Http\Requests\ShieldLoginRequest::class,
-            'credential_field' => 'email',
-            'verification_field' => 'email_verified_at',
+            'credential_field' => 'email', // username, email|phone, email|phone|username,
+            'verification_field' => 'email_verified_at', // make sure to add this field to your user model
         ],
     ],
 
