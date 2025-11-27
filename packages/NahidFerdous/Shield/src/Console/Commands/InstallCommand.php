@@ -33,17 +33,19 @@ class InstallCommand extends BaseShieldCommand
             return self::FAILURE;
         }
 
+        // Step 3.5: Driver-specific setup (Passport keys, JWT secret)
+        $this->performDriverSetup($driver);
+
         // Step 3: Prepare User model for the chosen driver
         if (!$this->runRequiredCommand('shield:prepare-user-model', ['--driver' => $driver])) {
             return self::FAILURE;
         }
 
-        if (!$this->runRequiredCommand('shield:publish-exceptions', ['--force' => true])) {
-            return self::FAILURE;
+        if ($this->confirm('Do you want to add and publish the global exception handler?', true)) {
+            if (!$this->runRequiredCommand('shield:publish-exceptions', ['--force' => true])) {
+                return self::FAILURE;
+            }
         }
-
-        // Step 3.5: Driver-specific setup (Passport keys, JWT secret)
-        $this->performDriverSetup($driver);
 
         // Step 4: Run migrations
         $arguments = [];
@@ -86,13 +88,14 @@ class InstallCommand extends BaseShieldCommand
 
         // Interactive selection
         $driver = $this->choice(
-            'Which authentication driver would you like to use?',
+            'Which authentication driver would you like to use? Depending on your choice some existing configuration may be overwritten.',
             [
                 'sanctum' => 'Sanctum - Token-based auth for SPAs and mobile apps (Recommended)',
                 'passport' => 'Passport - Full OAuth2 server implementation',
                 'jwt' => 'JWT - JSON Web Tokens for stateless authentication',
             ],
-            'sanctum'
+            'sanctum',
+            'Choose one of the available authentication drivers or press enter to use Sanctum.',
         );
 
         $this->info("Selected: {$driver}");
