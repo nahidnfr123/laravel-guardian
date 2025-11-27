@@ -10,7 +10,7 @@ return [
     'disable_commands' => env('SHIELD_DISABLE_COMMANDS', false),
 
     // Authentication driver: 'sanctum', 'passport', 'jwt'
-    'auth_driver' => env('SHIELD_AUTH_DRIVER', 'sanctum'),
+    'auth_driver' => env('SHIELD_AUTH_DRIVER', 'jwt'),
 
     'route_prefix' => env('SHIELD_ROUTE_PREFIX', 'api'),
     'route_name_prefix' => env('SHIELD_ROUTE_NAME_PREFIX', 'shield.'),
@@ -34,9 +34,8 @@ return [
     ],
 
     'auth' => [
+        'throttle_attempts' => 6,
         'check_verified' => env('SHIELD_CHECK_EMAIL_VERIFIED', false),
-        'verification_field' => 'email_verified_at', // custom: 'verified'
-        'verification_field_type' => 'timestamp', // eg: 'timestamp', 'boolean'
         'create_user' => [
             'request_class' => \NahidFerdous\Shield\Http\Requests\ShieldCreateUserRequest::class,
             'send_verification_email' => env('SHIELD_SEND_VERIFICATION_EMAIL', true),
@@ -44,6 +43,7 @@ return [
         'login' => [
             'request_class' => \NahidFerdous\Shield\Http\Requests\ShieldLoginRequest::class,
             'credential_field' => 'email',
+            'verification_field' => 'email_verified_at',
         ],
     ],
 
@@ -56,14 +56,16 @@ return [
     // Set custom views for emails, or leave null to use default templates
     'emails' => [
         'verify_email' => [
+            'subject' => 'Verify Email Address',
             'template' => null, // e.g., 'emails.verify-email'
             'expiration' => 6, // in hrs
-            'redirect_url' => env('APP_URL').'/verify-email',
+            'redirect_url' => env('APP_URL').'/verify-email', // frontend url
         ],
         'reset_password' => [
+            'subject' => 'Reset Password Notification',
             'template' => null, // e.g., 'emails.reset-password'
             'expiration' => 6, // in hrs
-            'redirect_url' => env('APP_URL').'/reset-password',
+            'redirect_url' => env('APP_URL').'/reset-password', // frontend url
         ],
     ],
 
