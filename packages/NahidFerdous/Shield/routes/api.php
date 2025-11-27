@@ -49,7 +49,7 @@ Route::middleware(["throttle:{$throttleAttempts},1"])->group(function () {
 // Email verification route (only if check_verified is enabled)
 if (config('shield.auth.check_verified', false)) {
     Route::get('verify-email/{token}', [AuthController::class, 'verifyEmail'])
-        ->middleware(['signed', "throttle:{$throttleAttempts},1"])
+        ->middleware(["throttle:{$throttleAttempts},1"])
         ->name('shield.verify-email');
     Route::middleware(["throttle:{$throttleAttempts},1"])->group(function () {
         Route::post('resend-email-verification-link', [AuthController::class, 'resendEmailVerificationLink'])->name('shield.resend-email-verification-link');

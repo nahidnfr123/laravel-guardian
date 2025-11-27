@@ -11,131 +11,103 @@ use Illuminate\Support\Str;
 use NahidFerdous\Shield\Http\Requests\ShieldLoginRequest;
 use NahidFerdous\Shield\Models\EmailVerificationToken;
 use NahidFerdous\Shield\Services\Auth\AuthServiceFactory;
+use NahidFerdous\Shield\Traits\ApiResponseTrait;
 
 class AuthController extends Controller
 {
+    use ApiResponseTrait;
+
     /**
      * Handle user login
      */
-    public function login(ShieldLoginRequest $request)
+    public function login(ShieldLoginRequest $request): ?\Illuminate\Http\JsonResponse
     {
         try {
             $authService = AuthServiceFactory::make();
             $result = $authService->login($request->validated());
 
-            return response($result, 200);
+            return $this->success('Login successful', $result);
         } catch (\Exception $e) {
-            $exceptionCode = $e->getCode();
-            $statusCode = ($exceptionCode >= 100 && $exceptionCode < 600) ? $exceptionCode : 401;
-
-            return response([
-                'error' => 1,
-                'message' => $e->getMessage(),
-            ], $statusCode);
+            return $this->failure($e->getMessage(), $e->getCode());
         }
     }
 
     /**
      * Handle user logout
      */
-    public function logout(Request $request)
+    public function logout(Request $request): ?\Illuminate\Http\JsonResponse
     {
         try {
             $user = $request->user();
             $authService = AuthServiceFactory::make();
             $authService->logout($user);
 
-            return response(['error' => 0, 'message' => 'Logged out successfully'], 200);
+            return $this->success('Logout successful');
         } catch (\Exception $e) {
-            return response(['error' => 1, 'message' => 'Logout failed'], 500);
+            return $this->failure($e->getMessage(), $e->getCode());
         }
     }
 
     /**
      * Refresh authentication token
      */
-    public function refresh(Request $request)
+    public function refresh(Request $request): ?\Illuminate\Http\JsonResponse
     {
         try {
             $user = $request->user();
             $authService = AuthServiceFactory::make();
             $result = $authService->refresh($user);
 
-            return response($result, 200);
+            return $this->success('Token refreshed successfully', $result);
         } catch (\Exception $e) {
-            return response(['error' => 1, 'message' => 'Token refresh failed'], 401);
+            return $this->failure('Token refresh failed' || $e->getMessage(), 401 || $e->getCode());
         }
     }
 
     /**
      * Get authenticated user information
      */
-    public function me(Request $request)
+    public function me(Request $request): \Illuminate\Http\JsonResponse
     {
-        return response($request->user(), 200);
+        return $this->success($request->user());
     }
 
     /**
      * Verify user email with token
      */
-    public function verifyEmail(string $token)
+    public function verifyEmail(string $token): \Illuminate\Http\JsonResponse
     {
-        // Verify if the hash is correct
-        if (! hash_equals((string) $token, sha1($user->getEmailForVerification()))) {
-            return response()->json(['message' => 'Invalid verification link.'], 403);
-        }
-
-        // Mark email as verified
-        if (! $user->hasVerifiedEmail()) {
-            $user->markEmailAsVerified();
-        }
-
         $verification = EmailVerificationToken::where('token', $token)
             ->where('expires_at', '>', now())
             ->first();
 
-        if (! $verification) {
-            return response([
-                'error' => 1,
-                'message' => 'Invalid or expired verification token',
-            ], 400);
+        if (!$verification) {
+            return $this->failure('Invalid or expired verification token', 400);
         }
 
         $userClass = config('shield.models.user');
         $user = $userClass::find($verification->user_id);
 
-        if (! $user) {
-            return response([
-                'error' => 1,
-                'message' => 'User not found',
-            ], 404);
+        if (!$user) {
+            return $this->failure('User not found', 404);
         }
 
         if ($user->email_verified_at) {
             $verification->delete();
 
-            return response([
-                'error' => 0,
-                'message' => 'Email already verified',
-            ], 200);
+            return $this->success('Email already verified');
         }
-        if (! $user->hasVerifiedEmail()) {
-            $user->markEmailAsVerified();
-        }
-        //        $user->email_verified_at = now();
-        //        $user->save();
+        $user->email_verified_at = now();
+        $user->save();
         $verification->delete();
 
-        return response([
-            'error' => 0,
-            'message' => 'Email verified successfully',
-        ], 200);
+        return $this->success('Email verified successfully');
     }
 
     /**
      * Verify user email with token
      */
-    public function resendEmailVerificationLink(Request $request)
+    public function resendEmailVerificationLink(Request $request): \Illuminate\Http\JsonResponse
     {
         $request->validate([
             'email' => 'required|email',
@@ -145,23 +117,17 @@ class AuthController extends Controller
         $user = $userClass::where('email', $request->email)->firstOrFail();
 
         if ($user->email_verified_at) {
-            return response([
-                'error' => 0,
-                'message' => 'Email already verified',
-            ], 200);
+            return $this->failure('Email already verified', 400);
         }
         $user->sendEmailVerificationNotification();
 
-        return response([
-            'error' => 0,
-            'message' => 'Verification link sent to your email',
-        ]);
+        return $this->success('Verification link sent to your email');
     }
 
     /**
      * Send password reset link
      */
-    public function forgotPassword(Request $request)
+    public function forgotPassword(Request $request): \Illuminate\Http\JsonResponse
     {
         $request->validate([
             'email' => 'required|email',
@@ -172,22 +138,16 @@ class AuthController extends Controller
         );
 
         if ($status === Password::RESET_LINK_SENT) {
-            return response([
-                'error' => 0,
-                'message' => 'Password reset link sent to your email',
-            ], 200);
+            return $this->success('Password reset link sent to your email');
         }
 
-        return response([
-            'error' => 1,
-            'message' => 'Unable to send reset link',
-        ], 400);
+        return $this->failure('Unable to send reset link', 400);
     }
 
     /**
      * Reset password with token
      */
-    public function resetPassword(Request $request)
+    public function resetPassword(Request $request): \Illuminate\Http\JsonResponse
     {
         $request->validate([
             'token' => 'required',
@@ -209,22 +169,16 @@ class AuthController extends Controller
         );
 
         if ($status === Password::PASSWORD_RESET) {
-            return response([
-                'error' => 0,
-                'message' => 'Password reset successfully',
-            ], 200);
+            return $this->success('Password reset successfully');
         }
 
-        return response([
-            'error' => 1,
-            'message' => __($status),
-        ], 400);
+        return $this->failure(__($status), 400);
     }
 
     /**
-     * Change password for authenticated user
+     * Change password for an authenticated user
      */
-    public function changePassword(Request $request)
+    public function changePassword(Request $request): \Illuminate\Http\JsonResponse
     {
         $request->validate([
             'current_password' => 'required',
@@ -233,19 +187,13 @@ class AuthController extends Controller
 
         $user = $request->user();
 
-        if (! Hash::check($request->current_password, $user->password)) {
-            return response([
-                'error' => 1,
-                'message' => 'Current password is incorrect',
-            ], 400);
+        if (!Hash::check($request->current_password, $user->password)) {
+            return $this->failure('Current password is incorrect', 400);
         }
 
         $user->password = Hash::make($request->password);
         $user->save();
 
-        return response([
-            'error' => 0,
-            'message' => 'Password changed successfully',
-        ], 200);
+        return $this->success('Password changed successfully');
     }
 }

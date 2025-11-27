@@ -30,8 +30,8 @@ class ShieldUserRegisterListener implements ShouldQueue
         // Example: Log user registration
         Log::info('New user registered', [
             'user_id' => $user->id,
-            'email' => $user->email,
-            'name' => $user->name,
+            // 'email' => $user->email,
+            // 'name' => $user->name,
             'request_data' => $event->requestData,
         ]);
 
@@ -68,7 +68,7 @@ class ShieldUserRegisterListener implements ShouldQueue
             'expires_at' => $expiresAt,
         ]);
 
-        // Generate verification URL
+        // Generate verification URL i.e., frontend URL with token as query param
         $url = (string) config('shield.emails.verify_email.redirect_url', url(config('shield.route_prefix').'/verify-email'));
         $redirectUrl = $url.'?token='.$token;
 

@@ -102,7 +102,7 @@ abstract class AuthService
             return true;
         }
 
-        $verificationField = config('shield.auth.login.verification_field', 'email_verified_at');
+        $verificationField = config('shield.auth.verification_field', 'email_verified_at');
 
         return (bool) ($user->{$verificationField} ?? false);
     }
