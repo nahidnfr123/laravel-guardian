@@ -131,19 +131,23 @@ class AuthController extends Controller
      */
     public function forgotPassword(Request $request): \Illuminate\Http\JsonResponse
     {
-        $request->validate([
-            'email' => 'required|email',
-        ]);
+        try {
+            $request->validate([
+                'email' => 'required|email',
+            ]);
 
-        $status = Password::sendResetLink(
-            $request->only('email')
-        );
+            $status = Password::sendResetLink(
+                $request->only('email')
+            );
 
-        if ($status === Password::RESET_LINK_SENT) {
-            return $this->success('Password reset link sent to your email');
+            if ($status === Password::RESET_LINK_SENT) {
+                return $this->success('Password reset link sent to your email');
+            }
+
+            return $this->failure('Unable to send reset link', 400);
+        } catch (\Exception $e) {
+            return $this->failure($e->getMessage() ?? 'Unable to send reset link', 400);
         }
-
-        return $this->failure('Unable to send reset link', 400);
     }
 
     /**
