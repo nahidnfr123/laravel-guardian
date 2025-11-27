@@ -26,15 +26,15 @@ class JWTAuthService extends AuthService
         $user = $this->findUserByCredentials($credentials);
 
         if (! $this->validateCredentials($user, $credentials['password'])) {
-            throw new \Exception('Invalid credentials', 401);
+            throw new \RuntimeException('Invalid credentials', 401);
         }
 
         if ($this->userIsSuspended($user)) {
-            throw new \Exception('User is suspended', 423);
+            throw new \RuntimeException('User is suspended', 423);
         }
 
         if (! $this->userIsVerified($user)) {
-            throw new \Exception('Account not verified', 403);
+            throw new \RuntimeException('Account not verified', 403);
         }
 
         $token = $this->generateToken($user);
@@ -70,9 +70,11 @@ class JWTAuthService extends AuthService
                 'expires_in' => $this->ttl * 60,
             ]);
         } catch (TokenExpiredException $e) {
-            throw new \Exception('Token has expired and cannot be refreshed', 401);
+            throw new \RuntimeException('Token has expired and cannot be refreshed', 401);
         } catch (JWTException $e) {
-            throw new \Exception('Could not refresh token', 500);
+            throw new \RuntimeException('Could not refresh token', 500);
+        } catch (\Exception $e) {
+            throw new \RuntimeException($e->getMessage(), 500);
         }
     }
 
@@ -105,7 +107,7 @@ class JWTAuthService extends AuthService
 
         // Ensure user implements JWTSubject
         if (! $user instanceof \Tymon\JWTAuth\Contracts\JWTSubject) {
-            throw new \Exception('User model must implement JWTSubject interface');
+            throw new \RuntimeException('User model must implement JWTSubject interface');
         }
 
         return JWTAuth::customClaims($customClaims)->fromUser($user);
@@ -118,11 +120,11 @@ class JWTAuthService extends AuthService
     {
         // Ensure user implements JWTSubject
         if (! $user instanceof \Tymon\JWTAuth\Contracts\JWTSubject) {
-            throw new \Exception('User model must implement JWTSubject interface');
+            throw new \RuntimeException('User model must implement JWTSubject interface');
         }
 
         // Temporarily set longer TTL for refresh token (ensure integer)
-        $originalTtl = config('jwt.ttl');
+        $originalTtl = config('jwt.ttl', 60);
         config(['jwt.ttl' => (int) $this->refreshTtl]);
 
         $customClaims = [

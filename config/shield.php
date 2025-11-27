@@ -58,12 +58,12 @@ return [
         'verify_email' => [
             'template' => null, // e.g., 'emails.verify-email'
             'expiration' => 6, // in hrs
-            'redirect_url' => env('APP_URL').'/verify-email',
+            'redirect_url' => env('APP_URL').'/verify-email', // frontend url
         ],
         'reset_password' => [
             'template' => null, // e.g., 'emails.reset-password'
             'expiration' => 6, // in hrs
-            'redirect_url' => env('APP_URL').'/reset-password',
+            'redirect_url' => env('APP_URL').'/reset-password', // frontend url
         ],
     ],
 

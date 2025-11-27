@@ -1,16 +1,17 @@
 # Auth Requirements
 
 1. Login (sanctum, jwt, passport)
-2. Logout
+2. Logout 🥶
 3. Register 🥶
-4. Add register even so, package user can listen to event and perform other actions
-5. Verify Email
+4. Add register even so, package user can listen to event and perform other actions 🥶
+5. Verify Email 🥶
 6. Request Email Verification Link
 7. Forget Password
 8. Password Reset
 9. Me 🥶
 10. Change Password 🥶
 11. Scopes | Ability etc
+
 
 # Role & Permission Requirements
 
