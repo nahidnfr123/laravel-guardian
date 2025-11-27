@@ -8,19 +8,18 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use NahidFerdous\Shield\Concerns\HasShieldRoles;
-use Tymon\JWTAuth\Contracts\JWTSubject;
 use NahidFerdous\Shield\Notifications\ResetPasswordNotification;
+use Laravel\Sanctum\HasApiTokens;
+
 
 
 
 class User extends Authenticatable
- implements JWTSubject{
+ {
+    use HasApiTokens, HasShieldRoles;
+
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
-
-    use HasShieldRoles;
-
-    /**
+    use HasFactory, Notifiable;/**
      * The attributes that are mass assignable.
      *
      * @var list<string>
@@ -59,26 +58,6 @@ class User extends Authenticatable
         ];
     }
 
-
-    /**
-     * Get the identifier that will be stored in the subject claim of the JWT.
-     *
-     * @return mixed
-     */
-    public function getJWTIdentifier(): mixed
-    {
-        return $this->getKey();
-    }
-
-    /**
-     * Return a key value array, containing any custom claims to be added to the JWT.
-     *
-     * @return array
-     */
-    public function getJWTCustomClaims(): array
-    {
-        return [];
-    }
 
     /**
      * Send the password reset notification.

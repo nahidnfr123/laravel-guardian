@@ -10,7 +10,7 @@ return [
     'disable_commands' => env('SHIELD_DISABLE_COMMANDS', false),
 
     // Authentication driver: 'sanctum', 'passport', 'jwt'
-    'auth_driver' => env('SHIELD_AUTH_DRIVER', 'jwt'),
+    'auth_driver' => env('SHIELD_AUTH_DRIVER', 'sanctum'),
 
     'route_prefix' => env('SHIELD_ROUTE_PREFIX', 'api'),
     'route_name_prefix' => env('SHIELD_ROUTE_NAME_PREFIX', 'shield.'),

@@ -17,8 +17,7 @@ $driver = config('shield.auth_driver', 'sanctum');
  */
 $getAuthMiddleware = match ($driver) {
     // 'sanctum' => 'auth:sanctum',
-    'passport' => 'auth:api',
-    'jwt' => 'auth:api',
+    'passport', 'jwt' => 'auth:api',
     default => 'auth:sanctum',
 };
 

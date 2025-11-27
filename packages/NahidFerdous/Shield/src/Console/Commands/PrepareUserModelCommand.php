@@ -476,7 +476,7 @@ class PrepareUserModelCommand extends BaseShieldCommand
     }
 
     /**
-     * Ensure sendPasswordResetNotification method exists in User model
+     * Ensure sendPasswordResetNotification method exists in a User model
      */
     protected function ensurePasswordResetMethod(string $contents): string
     {
